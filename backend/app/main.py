@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.chat.router import router as chat_router
+from app.api.crm.router import router as crm_router
+from app.api.public.leads import router as public_leads_router
 from app.api.webhooks.evolution import router as evolution_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
@@ -32,7 +34,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=settings.cors_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,6 +43,8 @@ app.add_middleware(
 
 app.include_router(evolution_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
+app.include_router(crm_router, prefix="/api")
+app.include_router(public_leads_router, prefix="/api")
 
 
 @app.get("/health", tags=["sistema"])

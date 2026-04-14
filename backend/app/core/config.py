@@ -36,9 +36,16 @@ class Settings(BaseSettings):
     app_secret_key: str = "change_me"
     log_level: str = "INFO"
 
+    # CORS — origens permitidas (separadas por vírgula no env)
+    cors_origins: str = "http://localhost:3000"
+
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"
+
+    @property
+    def cors_allowed_origins(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
 
 @lru_cache
