@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: juris-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # Evolution API já está na VPS do usuário.
+  # Descomente abaixo APENAS para testes locais offline:
+  #
+  # evolution:
+  #   image: atendai/evolution-api:latest
+  #   container_name: juris-evolution
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:8080"
+  #   env_file: .env
+  #   environment:
+  #     SERVER_URL: http://localhost:8080
+  #     AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+
+volumes:
+  redis_data:

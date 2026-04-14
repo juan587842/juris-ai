@@ -1,0 +1,57 @@
+[project]
+name = "juris-ai-backend"
+version = "0.1.0"
+description = "Juris AI — CRM e Legal Operations para escritórios de advocacia"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic-settings>=2.6.0",
+    "supabase>=2.10.0",
+    "httpx>=0.28.0",
+    "structlog>=24.4.0",
+    "agno>=1.2.0",
+    "langgraph>=0.2.0",
+    "openai>=1.57.0",
+    "arq>=0.26.0",
+    "pypdf>=5.1.0",
+    "pdfplumber>=0.11.0",
+    "python-jose[cryptography]>=3.3.0",
+    "slowapi>=0.1.9",
+    "python-multipart>=0.0.19",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-httpx>=0.35.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+    "types-python-jose>=3.3.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
