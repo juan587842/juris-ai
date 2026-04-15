@@ -36,6 +36,11 @@ class AndamentoOut(BaseModel):
     texto_original: str
     texto_traduzido: str | None
     notificado_cliente: bool
+    pdf_url: str | None
+    pdf_texto: str | None
+    notificado_advogado_at: datetime | None
+    notificado_cliente_at: datetime | None
+    origem: str
     created_at: datetime
 
 
@@ -59,6 +64,9 @@ class ProcessoOut(BaseModel):
     vara: str | None
     area_juridica: AreaJuridica | None
     status: str
+    monitorar: bool
+    notificar_cliente: bool
+    ultima_verificacao_at: datetime | None
     created_at: datetime
     updated_at: datetime
 
@@ -109,3 +117,18 @@ class IntimacaoCreate(BaseModel):
     data_publicacao: date
     prazo_fatal: date | None = None
     texto: str | None = Field(default=None, max_length=10000)
+
+
+class MonitoramentoConfig(BaseModel):
+    monitorar: bool | None = None
+    notificar_cliente: bool | None = None
+
+
+class MonitoramentoLogOut(BaseModel):
+    id: UUID
+    processo_id: UUID
+    provider: str
+    status: str
+    movimentacoes_encontradas: int
+    erro_msg: str | None
+    created_at: datetime
