@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Scale, Archive, Plus } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface Props {
   data: ProcessoDetailType;
@@ -24,13 +26,20 @@ export function ProcessoDetail({ data }: Props) {
   const [formDate, setFormDate] = useState("");
   const [formText, setFormText] = useState("");
   const [saving, setSaving] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [localAndamentos, setLocalAndamentos] = useState(andamentos);
   const router = useRouter();
 
   async function handleArchive() {
-    if (!confirm("Arquivar este processo?")) return;
-    await api.delete(`/api/processos/${processo.id}`);
-    router.push("/processos");
+    setArchiving(true);
+    try {
+      await api.delete(`/api/processos/${processo.id}`);
+      router.push("/processos");
+    } finally {
+      setArchiving(false);
+      setShowArchiveConfirm(false);
+    }
   }
 
   async function handleAddAndamento(e: React.FormEvent) {
@@ -79,8 +88,8 @@ export function ProcessoDetail({ data }: Props) {
 
         {processo.status !== "arquivado" && (
           <button
-            onClick={handleArchive}
-            className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted transition-colors"
+            onClick={() => setShowArchiveConfirm(true)}
+            className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface-elevated transition-colors"
           >
             <Archive className="h-3.5 w-3.5" />
             Arquivar
@@ -114,64 +123,13 @@ export function ProcessoDetail({ data }: Props) {
           <>
             <div className="flex justify-end mb-4">
               <button
-                onClick={() => setShowForm((v) => !v)}
-                className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                onClick={() => setShowForm(true)}
+                className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary-hover hover:shadow-glow-gold transition-colors"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Adicionar andamento
               </button>
             </div>
-
-            {showForm && (
-              <form
-                onSubmit={handleAddAndamento}
-                className="mb-6 rounded-lg border bg-card p-4 space-y-3"
-              >
-                <div className="flex gap-3 items-start">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-muted-foreground">
-                      Data
-                    </label>
-                    <input
-                      type="date"
-                      value={formDate}
-                      onChange={(e) => setFormDate(e.target.value)}
-                      required
-                      className="rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col gap-1">
-                    <label className="text-xs font-medium text-muted-foreground">
-                      Texto do andamento
-                    </label>
-                    <textarea
-                      value={formText}
-                      onChange={(e) => setFormText(e.target.value)}
-                      required
-                      rows={3}
-                      className="resize-none rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowForm(false)}
-                    className="rounded-md border px-3 py-1.5 text-xs hover:bg-muted transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                  >
-                    Salvar
-                  </button>
-                </div>
-              </form>
-            )}
-
             <AndamentoTimeline andamentos={localAndamentos} />
           </>
         ) : (
@@ -186,6 +144,67 @@ export function ProcessoDetail({ data }: Props) {
           </div>
         )}
       </div>
+
+      {/* Modal — Novo andamento */}
+      <Modal
+        open={showForm}
+        onClose={() => { setShowForm(false); setFormDate(""); setFormText(""); }}
+        title="Novo andamento"
+        description="Registre um andamento manual no processo"
+        size="md"
+      >
+        <form onSubmit={handleAddAndamento} className="space-y-4">
+          <div>
+            <label className="label-caps mb-1.5 block">Data *</label>
+            <input
+              type="date"
+              value={formDate}
+              onChange={(e) => setFormDate(e.target.value)}
+              required
+              className="w-full rounded-lg border border-border bg-surface-elevated/50 px-3.5 py-2.5 text-sm focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
+            />
+          </div>
+          <div>
+            <label className="label-caps mb-1.5 block">Texto do andamento *</label>
+            <textarea
+              value={formText}
+              onChange={(e) => setFormText(e.target.value)}
+              required
+              rows={4}
+              className="w-full resize-none rounded-lg border border-border bg-surface-elevated/50 px-3.5 py-2.5 text-sm focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
+              placeholder="Descreva o andamento processual…"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => { setShowForm(false); setFormDate(""); setFormText(""); }}
+              disabled={saving}
+              className="rounded-lg border border-border px-4 py-2 text-sm transition-colors hover:bg-surface-elevated disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover hover:shadow-glow-gold disabled:opacity-50"
+            >
+              {saving ? "Salvando..." : "Salvar andamento"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ConfirmDialog — Arquivar */}
+      <ConfirmDialog
+        open={showArchiveConfirm}
+        onClose={() => setShowArchiveConfirm(false)}
+        onConfirm={handleArchive}
+        title="Arquivar processo"
+        description={`Tem certeza que deseja arquivar o processo ${processo.numero_cnj}? Ele não aparecerá mais na lista principal.`}
+        confirmLabel="Arquivar"
+        loading={archiving}
+      />
     </div>
   );
 }

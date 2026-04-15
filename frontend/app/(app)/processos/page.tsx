@@ -10,12 +10,14 @@ import {
 } from "@/types/processos";
 import { AREA_JURIDICA_LABELS } from "@/types/crm";
 import { cn } from "@/lib/utils";
-import { Scale } from "lucide-react";
+import { Scale, Plus } from "lucide-react";
+import { NovoProcessoModal } from "@/components/processos/NovoProcessoModal";
 
 export default function ProcessosPage() {
   const [processos, setProcessos] = useState<Processo[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     api
@@ -31,6 +33,11 @@ export default function ProcessosPage() {
 
   return (
     <div className="flex flex-col h-full">
+      <NovoProcessoModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onCreated={(p) => setProcessos((prev) => [p, ...prev])}
+      />
       <div className="border-b px-6 py-4 flex items-center justify-between gap-4">
         <h1 className="text-lg font-semibold">Processos Judiciais</h1>
         <div className="flex items-center gap-3">
@@ -41,12 +48,14 @@ export default function ProcessosPage() {
             placeholder="Buscar por CNJ ou tribunal…"
             className="w-72 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          <Link
-            href="/processos/novo"
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          <button
+            type="button"
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover hover:shadow-glow-gold"
           >
-            + Novo processo
-          </Link>
+            <Plus className="h-4 w-4" />
+            Novo processo
+          </button>
         </div>
       </div>
 

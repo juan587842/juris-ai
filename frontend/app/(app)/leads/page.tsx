@@ -5,8 +5,9 @@ import { createBrowserClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import type { Lead } from "@/types/crm";
 import { LEAD_STATUS_LABELS, AREA_JURIDICA_LABELS } from "@/types/crm";
-import { Phone, Mail, MessageSquare } from "lucide-react";
+import { Phone, Mail, MessageSquare, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NovoLeadModal } from "@/components/crm/NovoLeadModal";
 
 const STATUS_COLORS: Record<string, string> = {
   novo: "bg-blue-100 text-blue-700",
@@ -19,6 +20,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [search, setSearch] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const supabase = createBrowserClient();
 
   useEffect(() => {
@@ -44,15 +46,30 @@ export default function LeadsPage() {
 
   return (
     <div className="flex flex-col h-full">
+      <NovoLeadModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onCreated={(lead) => setLeads((prev) => [lead, ...prev])}
+      />
       <div className="border-b px-6 py-4 flex items-center justify-between gap-4">
         <h1 className="text-lg font-semibold">Leads</h1>
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por nome, telefone ou e-mail…"
-          className="w-72 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        />
+        <div className="flex items-center gap-3">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome, telefone ou e-mail…"
+            className="w-72 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <button
+            type="button"
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover hover:shadow-glow-gold"
+          >
+            <UserPlus className="h-4 w-4" />
+            Novo lead
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
