@@ -2,6 +2,7 @@
 import re
 from datetime import date, datetime
 from enum import Enum
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
@@ -27,6 +28,12 @@ class FonteIntimacao(str, Enum):
     domicilio_judicial = "domicilio_judicial"
 
 
+class MonitoramentoStatus(str, Enum):
+    ok = "ok"
+    erro = "erro"
+    sem_novidade = "sem_novidade"
+
+
 # ─── Respostas ────────────────────────────────────────────────────────────────
 
 class AndamentoOut(BaseModel):
@@ -40,7 +47,7 @@ class AndamentoOut(BaseModel):
     pdf_texto: str | None
     notificado_advogado_at: datetime | None
     notificado_cliente_at: datetime | None
-    origem: str
+    origem: Literal["manual", "rpa"]
     created_at: datetime
 
 
@@ -128,7 +135,7 @@ class MonitoramentoLogOut(BaseModel):
     id: UUID
     processo_id: UUID
     provider: str
-    status: str
+    status: MonitoramentoStatus
     movimentacoes_encontradas: int
     erro_msg: str | None
     created_at: datetime
