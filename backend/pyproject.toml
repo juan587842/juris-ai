@@ -20,6 +20,8 @@ dependencies = [
     "python-jose[cryptography]>=3.3.0",
     "slowapi>=0.1.9",
     "python-multipart>=0.0.19",
+    "apscheduler>=3.10.0",
+    "pytz>=2025.1",
 ]
 
 [project.optional-dependencies]
