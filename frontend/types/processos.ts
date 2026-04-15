@@ -10,6 +10,11 @@ export interface Andamento {
   texto_original: string;
   texto_traduzido: string | null;
   notificado_cliente: boolean;
+  pdf_url: string | null;
+  pdf_texto: string | null;
+  notificado_advogado_at: string | null;
+  notificado_cliente_at: string | null;
+  origem: "manual" | "rpa";
   created_at: string;
 }
 
@@ -33,6 +38,9 @@ export interface Processo {
   vara: string | null;
   area_juridica: AreaJuridica | null;
   status: ProcessoStatus;
+  monitorar: boolean;
+  notificar_cliente: boolean;
+  ultima_verificacao_at: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -11,6 +11,7 @@ from app.models.processos import (
     AndamentoOut,
     IntimacaoCreate,
     IntimacaoOut,
+    MonitoramentoConfig,
     ProcessoCreate,
     ProcessoDetail,
     ProcessoOut,
@@ -183,6 +184,47 @@ async def add_andamento(
 
     result = await supabase.table("andamentos").insert(payload).execute()
     return result.data[0]
+
+
+# ─── Monitoramento ────────────────────────────────────────────────────────────
+
+@router.put("/{processo_id}/monitoramento", response_model=ProcessoOut)
+async def update_monitoramento(
+    processo_id: UUID, body: MonitoramentoConfig, current_user: AuthUser
+):
+    await _get_processo_or_404(processo_id)
+    supabase = await get_supabase()
+
+    payload = body.model_dump(exclude_none=True)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Informe ao menos um campo para atualizar",
+        )
+
+    result = (
+        await supabase.table("processos")
+        .update(payload)
+        .eq("id", str(processo_id))
+        .execute()
+    )
+    logger.info(
+        "Monitoramento atualizado",
+        processo_id=str(processo_id),
+        payload=payload,
+        user=current_user.id,
+    )
+    return result.data[0]
+
+
+@router.post("/{processo_id}/verificar", status_code=status.HTTP_200_OK)
+async def verificar_agora(processo_id: UUID, current_user: AuthUser):
+    from app.rpa.monitoramento import verificar_processo
+
+    processo = await _get_processo_or_404(processo_id)
+    await verificar_processo(processo)
+    logger.info("Verificação manual disparada", processo_id=str(processo_id), user=current_user.id)
+    return {"status": "ok", "processo_id": str(processo_id)}
 
 
 # ─── Intimações ───────────────────────────────────────────────────────────────

@@ -13,12 +13,13 @@ import { Scale, Archive, Plus, Pencil } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EditarProcessoModal } from "./EditarProcessoModal";
+import { MonitoramentoTab } from "./MonitoramentoTab";
 
 interface Props {
   data: ProcessoDetailType;
 }
 
-type Tab = "andamentos" | "intimacoes";
+type Tab = "andamentos" | "intimacoes" | "monitoramento";
 
 export function ProcessoDetail({ data }: Props) {
   const { processo, andamentos, intimacoes } = data;
@@ -121,7 +122,7 @@ export function ProcessoDetail({ data }: Props) {
 
       {/* Tabs */}
       <div className="border-b flex text-sm">
-        {(["andamentos", "intimacoes"] as Tab[]).map((t) => (
+        {(["andamentos", "intimacoes", "monitoramento"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -134,7 +135,9 @@ export function ProcessoDetail({ data }: Props) {
           >
             {t === "andamentos"
               ? `Andamentos (${localAndamentos.length})`
-              : `Intimações (${intimacoes.length})`}
+              : t === "intimacoes"
+              ? `Intimações (${intimacoes.length})`
+              : "🤖 Monitoramento"}
           </button>
         ))}
       </div>
@@ -154,7 +157,7 @@ export function ProcessoDetail({ data }: Props) {
             </div>
             <AndamentoTimeline andamentos={localAndamentos} />
           </>
-        ) : (
+        ) : tab === "intimacoes" ? (
           <div className="space-y-3">
             {intimacoes.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
@@ -164,6 +167,12 @@ export function ProcessoDetail({ data }: Props) {
               intimacoes.map((i) => <IntimacaoCard key={i.id} intimacao={i} />)
             )}
           </div>
+        ) : (
+          <MonitoramentoTab
+            processo={localProcesso}
+            andamentosRpa={localAndamentos.filter((a) => a.origem === "rpa")}
+            onProcessoUpdated={(updated) => setLocalProcesso(updated)}
+          />
         )}
       </div>
 
