@@ -26,7 +26,7 @@ async def get_current_user(
     try:
         payload = jwt.decode(
             token,
-            settings.supabase_anon_key,
+            settings.supabase_jwt_secret,
             algorithms=["HS256"],
             options={"verify_aud": False},
         )

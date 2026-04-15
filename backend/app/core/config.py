@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_anon_key: str
     supabase_service_key: str
+    supabase_jwt_secret: str  # Settings → API → JWT Secret no Supabase Dashboard
 
     # Evolution API
     evolution_api_url: str
