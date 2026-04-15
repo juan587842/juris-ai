@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FileText, Inbox, KanbanSquare, LogOut, Scale, Users } from "lucide-react";
+import { FileText, Inbox, KanbanSquare, LayoutDashboard, LogOut, Scale, Users } from "lucide-react";
 
 import { createBrowserClient } from "@/lib/supabase/client";
 
@@ -13,6 +13,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/inbox", label: "Inbox", icon: Inbox },
   { href: "/crm", label: "CRM", icon: KanbanSquare },
   { href: "/leads", label: "Leads", icon: Users },

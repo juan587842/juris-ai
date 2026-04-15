@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.chat.router import router as chat_router
 from app.api.crm.router import router as crm_router
+from app.api.dashboard.router import router as dashboard_router
 from app.api.processos.router import router as processos_router
 from app.api.public.leads import router as public_leads_router
 from app.api.webhooks.evolution import router as evolution_router
@@ -46,6 +47,7 @@ app.include_router(evolution_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
 app.include_router(crm_router, prefix="/api")
 app.include_router(processos_router, prefix="/api")
+app.include_router(dashboard_router, prefix="/api")
 app.include_router(public_leads_router, prefix="/api")
 
 
