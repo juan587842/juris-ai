@@ -177,16 +177,16 @@ async def _buscar_telefone_advogado(supabase, processo: dict) -> str | None:
     advogado_id = processo.get("advogado_id")
     if not advogado_id:
         return None
-    result = await supabase.table("leads").select("telefone").eq("id", advogado_id).single().execute()
-    return result.data.get("telefone") if result.data else None
+    result = await supabase.table("leads").select("telefone").eq("id", advogado_id).limit(1).execute()
+    return result.data[0].get("telefone") if result.data else None
 
 
 async def _buscar_telefone_cliente(supabase, processo: dict) -> str | None:
     cliente_id = processo.get("cliente_id")
     if not cliente_id:
         return None
-    result = await supabase.table("leads").select("telefone").eq("id", cliente_id).single().execute()
-    return result.data.get("telefone") if result.data else None
+    result = await supabase.table("leads").select("telefone").eq("id", cliente_id).limit(1).execute()
+    return result.data[0].get("telefone") if result.data else None
 
 
 async def executar_ciclo_monitoramento() -> None:

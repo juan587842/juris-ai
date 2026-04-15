@@ -1,8 +1,6 @@
 """APScheduler configurado com timezone America/Sao_Paulo."""
 from __future__ import annotations
 
-import asyncio
-
 import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -27,11 +25,12 @@ def get_scheduler() -> AsyncIOScheduler:
         settings = get_settings()
         _scheduler = AsyncIOScheduler(timezone=_SP_TZ)
         _scheduler.add_job(
-            func=lambda: asyncio.ensure_future(_job_monitoramento()),
+            func=_job_monitoramento,
             trigger="interval",
             hours=settings.rpa_check_interval_hours,
             id="monitoramento_processual",
             replace_existing=True,
+            misfire_grace_time=60,
         )
     return _scheduler
 
