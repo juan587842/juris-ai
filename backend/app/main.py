@@ -11,6 +11,7 @@ from app.api.public.leads import router as public_leads_router
 from app.api.webhooks.evolution import router as evolution_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
+from app.rpa.scheduler import start_scheduler, stop_scheduler
 
 
 @asynccontextmanager
@@ -19,7 +20,9 @@ async def lifespan(app: FastAPI):
     configure_logging(settings.log_level)
     logger = get_logger("juris-ai")
     logger.info("Juris AI iniciando", env=settings.app_env)
+    start_scheduler()
     yield
+    stop_scheduler()
     logger.info("Juris AI encerrando")
 
 
