@@ -8,14 +8,12 @@ import re
 from datetime import date, datetime
 
 import httpx
-import pytz
 
 from app.core.logging import get_logger
 from app.rpa.providers.base import MonitoramentoProvider, Movimentacao
 
 logger = get_logger("rpa.datajud")
 
-_SP_TZ = pytz.timezone("America/Sao_Paulo")
 _CNJ_RE = re.compile(r"^\d{7}-\d{2}\.\d{4}\.(\d)\.(\d{2})\.\d{4}$")
 
 _DATAJUD_BASE = "https://api-publica.datajud.cnj.jus.br"
@@ -85,9 +83,13 @@ class DataJudProvider(MonitoramentoProvider):
         }
         headers = {"Authorization": _DATAJUD_KEY, "Content-Type": "application/json"}
 
-        async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.post(url, json=payload, headers=headers)
-            resp.raise_for_status()
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.post(url, json=payload, headers=headers)
+                resp.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            logger.error("DataJud retornou erro HTTP", cnj=numero_cnj, status=exc.response.status_code)
+            raise
 
         hits = resp.json().get("hits", {}).get("hits", [])
         if not hits:
