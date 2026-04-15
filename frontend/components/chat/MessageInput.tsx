@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
 
 interface Props {
   conversationId: string;
@@ -20,19 +21,9 @@ export function MessageInput({ conversationId, disabled, onSent }: Props) {
 
     setSending(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/conversations/${conversationId}/messages`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ content: text.trim() }),
-        }
-      );
-      if (res.ok) {
-        setText("");
-        onSent?.();
-      }
+      await api.post(`/api/conversations/${conversationId}/messages`, { content: text.trim() });
+      setText("");
+      onSent?.();
     } finally {
       setSending(false);
     }

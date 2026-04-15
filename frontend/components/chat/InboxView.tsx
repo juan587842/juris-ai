@@ -1,10 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Scale, MessageSquare, Kanban, FileText, LogOut } from "lucide-react";
-import Link from "next/link";
-import { createBrowserClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import type { Conversation } from "@/types/chat";
 import { ConversationList } from "./ConversationList";
 import { ConversationHeader } from "./ConversationHeader";
@@ -12,6 +8,7 @@ import { MessageThread } from "./MessageThread";
 import { MessageInput } from "./MessageInput";
 import { NotesPanel } from "./NotesPanel";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
 
 interface Props {
   currentUserId: string;
@@ -23,22 +20,11 @@ export function InboxView({ currentUserId }: Props) {
   const [selected, setSelected] = useState<Conversation | null>(null);
   const [tab, setTab] = useState<Tab>("mensagens");
   const [actionLoading, setActionLoading] = useState(false);
-  const router = useRouter();
-  const supabase = createBrowserClient();
 
   async function apiAction(path: string, body?: object) {
     setActionLoading(true);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: body ? JSON.stringify(body) : undefined,
-      });
-      // Atualizar conversa selecionada localmente
-      if (selected) {
-        setSelected((prev) => prev ? { ...prev, ai_enabled: false, status: "em_atendimento" } : prev);
-      }
+      await api.post(path, body);
     } finally {
       setActionLoading(false);
     }
@@ -56,36 +42,11 @@ export function InboxView({ currentUserId }: Props) {
     setSelected((prev) => prev ? { ...prev, status: "resolvida" } : prev);
   }
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
-  }
-
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      {/* ── Nav lateral ── */}
-      <nav className="w-14 border-r flex flex-col items-center py-3 gap-4 bg-card">
-        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-primary-foreground">
-          <Scale className="h-4 w-4" />
-        </div>
-        <div className="flex-1 flex flex-col items-center gap-1 mt-2">
-          <NavItem href="/inbox" icon={<MessageSquare className="h-5 w-5" />} label="Inbox" active />
-          <NavItem href="/crm" icon={<Kanban className="h-5 w-5" />} label="CRM" />
-          <NavItem href="/processos" icon={<FileText className="h-5 w-5" />} label="Processos" />
-        </div>
-        <button
-          onClick={handleLogout}
-          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          title="Sair"
-        >
-          <LogOut className="h-4 w-4" />
-        </button>
-      </nav>
-
+    <div className="flex h-full bg-background overflow-hidden">
       {/* ── Lista de conversas ── */}
       <aside className="w-72 border-r flex flex-col">
-        <div className="p-4 border-b flex items-center justify-between">
+        <div className="p-4 border-b">
           <h1 className="font-semibold">Caixa de entrada</h1>
         </div>
         <ConversationList
@@ -148,29 +109,3 @@ export function InboxView({ currentUserId }: Props) {
   );
 }
 
-function NavItem({
-  href,
-  icon,
-  label,
-  active,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      title={label}
-      className={cn(
-        "p-2 rounded-lg transition-colors",
-        active
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-      )}
-    >
-      {icon}
-    </Link>
-  );
-}

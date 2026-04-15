@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { InternalNote } from "@/types/chat";
 import { StickyNote, Send } from "lucide-react";
+import { api } from "@/lib/api";
 
 interface Props {
   conversationId: string;
@@ -33,15 +34,7 @@ export function NotesPanel({ conversationId, currentUserId }: Props) {
     if (!text.trim() || saving) return;
     setSaving(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/conversations/${conversationId}/notes`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ content: text.trim() }),
-        }
-      );
+      await api.post(`/api/conversations/${conversationId}/notes`, { content: text.trim() });
       setText("");
       // Recarregar
       const { data } = await supabase
