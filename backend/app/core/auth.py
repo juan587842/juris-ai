@@ -3,10 +3,9 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
 from pydantic import BaseModel
 
-from app.core.config import get_settings
+from app.integrations.supabase import get_supabase
 
 _bearer = HTTPBearer(auto_error=True)
 
@@ -20,34 +19,29 @@ class CurrentUser(BaseModel):
 async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(_bearer)],
 ) -> CurrentUser:
-    settings = get_settings()
     token = credentials.credentials
 
     try:
-        payload = jwt.decode(
-            token,
-            settings.supabase_jwt_secret,
-            algorithms=["HS256"],
-            options={"verify_aud": False},
-        )
-    except JWTError as exc:
+        supabase = await get_supabase()
+        response = await supabase.auth.get_user(token)
+        user = response.user
+    except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido ou expirado",
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
-    user_id: str | None = payload.get("sub")
-    if not user_id:
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token sem identificador de usuário",
         )
 
     return CurrentUser(
-        id=user_id,
-        email=payload.get("email"),
-        role=payload.get("role", "authenticated"),
+        id=str(user.id),
+        email=user.email,
+        role=getattr(user, "role", "authenticated") or "authenticated",
     )
 
 
