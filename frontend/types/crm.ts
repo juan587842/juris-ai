@@ -81,6 +81,15 @@ export const LEAD_STATUS_ORDER: LeadStatus[] = [
   "desqualificado",
 ];
 
+export const OPORTUNIDADE_ESTAGIO_LABELS: Record<OportunidadeEstagio, string> = {
+  novo_lead: "Novo lead",
+  qualificado: "Qualificado",
+  proposta_enviada: "Proposta enviada",
+  negociacao: "Negociação",
+  ganho: "Ganho",
+  perdido: "Perdido",
+};
+
 export const AREA_JURIDICA_LABELS: Record<AreaJuridica, string> = {
   trabalhista: "Trabalhista",
   civil: "Cível",

@@ -3,16 +3,22 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { api, ApiError } from "@/lib/api";
 import {
   AREA_JURIDICA_LABELS,
   LEAD_STATUS_LABELS,
   LEAD_STATUS_ORDER,
+  OPORTUNIDADE_ESTAGIO_LABELS,
   type LeadDetail as LeadDetailType,
   type LeadStatus,
+  type Oportunidade,
 } from "@/types/crm";
+import { EditarLeadModal } from "./EditarLeadModal";
+import { NovaOportunidadeModal } from "./NovaOportunidadeModal";
+import { EditarOportunidadeModal } from "./EditarOportunidadeModal";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface LeadDetailProps {
   leadId: string;
@@ -25,6 +31,11 @@ export function LeadDetail({ leadId }: LeadDetailProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notas, setNotas] = useState("");
+  const [showEditarLead, setShowEditarLead] = useState(false);
+  const [showNovaOp, setShowNovaOp] = useState(false);
+  const [editingOp, setEditingOp] = useState<Oportunidade | null>(null);
+  const [deletingOp, setDeletingOp] = useState<Oportunidade | null>(null);
+  const [deletingOpLoading, setDeletingOpLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +75,20 @@ export function LeadDetail({ leadId }: LeadDetailProps) {
     }
   }
 
+  async function deleteOportunidade() {
+    if (!deletingOp || !data) return;
+    setDeletingOpLoading(true);
+    try {
+      await api.delete(`/api/crm/oportunidades/${deletingOp.id}`);
+      setData({ ...data, oportunidades: data.oportunidades.filter((o) => o.id !== deletingOp.id) });
+      setDeletingOp(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao excluir.");
+    } finally {
+      setDeletingOpLoading(false);
+    }
+  }
+
   async function saveNotas() {
     if (!data) return;
     setSaving(true);
@@ -100,6 +125,40 @@ export function LeadDetail({ leadId }: LeadDetailProps) {
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
+      {/* Modais */}
+      <EditarLeadModal
+        open={showEditarLead}
+        onClose={() => setShowEditarLead(false)}
+        lead={lead}
+        onUpdated={(updated) => { setData({ ...data, lead: updated }); setNotas(updated.notas ?? ""); }}
+      />
+      <NovaOportunidadeModal
+        open={showNovaOp}
+        onClose={() => setShowNovaOp(false)}
+        leadId={leadId}
+        onCreated={(op) => setData({ ...data, oportunidades: [op, ...oportunidades] })}
+      />
+      {editingOp && (
+        <EditarOportunidadeModal
+          open={!!editingOp}
+          onClose={() => setEditingOp(null)}
+          oportunidade={editingOp}
+          onUpdated={(updated) => {
+            setData({ ...data, oportunidades: oportunidades.map((o) => o.id === updated.id ? updated : o) });
+            setEditingOp(null);
+          }}
+        />
+      )}
+      <ConfirmDialog
+        open={!!deletingOp}
+        onClose={() => setDeletingOp(null)}
+        onConfirm={deleteOportunidade}
+        title="Excluir oportunidade"
+        description={`Deseja excluir a oportunidade "${deletingOp?.titulo}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        loading={deletingOpLoading}
+      />
+
       <header className="flex items-center justify-between border-b px-6 py-4">
         <div className="flex items-center gap-3">
           <button
@@ -118,18 +177,26 @@ export function LeadDetail({ leadId }: LeadDetailProps) {
           </div>
         </div>
 
-        <select
-          value={lead.status}
-          onChange={(e) => updateStatus(e.target.value as LeadStatus)}
-          disabled={saving}
-          className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
-        >
-          {LEAD_STATUS_ORDER.map((s) => (
-            <option key={s} value={s}>
-              {LEAD_STATUS_LABELS[s]}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowEditarLead(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-surface-elevated hover:text-foreground"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Editar
+          </button>
+          <select
+            value={lead.status}
+            onChange={(e) => updateStatus(e.target.value as LeadStatus)}
+            disabled={saving}
+            className="rounded-lg border border-border bg-surface-elevated/50 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary/30"
+          >
+            {LEAD_STATUS_ORDER.map((s) => (
+              <option key={s} value={s}>{LEAD_STATUS_LABELS[s]}</option>
+            ))}
+          </select>
+        </div>
       </header>
 
       <div className="grid flex-1 gap-6 p-6 lg:grid-cols-3">
@@ -225,9 +292,19 @@ export function LeadDetail({ leadId }: LeadDetailProps) {
 
         <aside className="space-y-4">
           <div className="rounded-lg border bg-card p-4">
-            <h2 className="mb-3 text-sm font-semibold text-foreground">
-              Oportunidades ({oportunidades.length})
-            </h2>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground">
+                Oportunidades ({oportunidades.length})
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowNovaOp(true)}
+                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-primary hover:bg-primary/10 transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Adicionar
+              </button>
+            </div>
             {oportunidades.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 Nenhuma oportunidade aberta.
@@ -235,16 +312,33 @@ export function LeadDetail({ leadId }: LeadDetailProps) {
             ) : (
               <ul className="space-y-2">
                 {oportunidades.map((o) => (
-                  <li
-                    key={o.id}
-                    className="rounded-md border p-3 text-sm"
-                  >
-                    <div className="font-medium text-foreground">{o.titulo}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {o.estagio.replace(/_/g, " ")}
-                      {o.valor_estimado != null
-                        ? ` · R$ ${Number(o.valor_estimado).toLocaleString("pt-BR")}`
-                        : ""}
+                  <li key={o.id} className="rounded-lg border border-border bg-surface-elevated/30 p-3 text-sm">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-medium text-foreground truncate">{o.titulo}</div>
+                        <div className="mt-0.5 text-xs text-muted-foreground">
+                          {OPORTUNIDADE_ESTAGIO_LABELS[o.estagio]}
+                          {o.valor_estimado != null
+                            ? ` · R$ ${Number(o.valor_estimado).toLocaleString("pt-BR")}`
+                            : ""}
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setEditingOp(o)}
+                          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeletingOp(o)}
+                          className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </li>
                 ))}

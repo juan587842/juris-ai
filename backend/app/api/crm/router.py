@@ -212,3 +212,10 @@ async def update_oportunidade(
     if not result.data:
         raise HTTPException(status_code=404, detail="Oportunidade não encontrada")
     return result.data[0]
+
+
+@router.delete("/oportunidades/{oportunidade_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_oportunidade(oportunidade_id: UUID, current_user: AuthUser):
+    supabase = await get_supabase()
+    await supabase.table("oportunidades").delete().eq("id", str(oportunidade_id)).execute()
+    return None

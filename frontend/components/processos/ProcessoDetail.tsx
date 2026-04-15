@@ -9,9 +9,10 @@ import { IntimacaoCard } from "./IntimacaoCard";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { Scale, Archive, Plus } from "lucide-react";
+import { Scale, Archive, Plus, Pencil } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EditarProcessoModal } from "./EditarProcessoModal";
 
 interface Props {
   data: ProcessoDetailType;
@@ -28,6 +29,8 @@ export function ProcessoDetail({ data }: Props) {
   const [saving, setSaving] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [showEditarProcesso, setShowEditarProcesso] = useState(false);
+  const [localProcesso, setLocalProcesso] = useState(processo);
   const [localAndamentos, setLocalAndamentos] = useState(andamentos);
   const router = useRouter();
 
@@ -62,39 +65,58 @@ export function ProcessoDetail({ data }: Props) {
 
   return (
     <div className="flex flex-col h-full">
+      {/* EditarProcessoModal */}
+      <EditarProcessoModal
+        open={showEditarProcesso}
+        onClose={() => setShowEditarProcesso(false)}
+        processo={localProcesso}
+        onUpdated={(updated) => setLocalProcesso(updated)}
+      />
+
       {/* Header */}
       <div className="border-b px-6 py-4 flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Scale className="h-4 w-4 text-muted-foreground" />
-            <h1 className="font-mono text-lg font-semibold">{processo.numero_cnj}</h1>
+            <h1 className="font-mono text-lg font-semibold">{localProcesso.numero_cnj}</h1>
             <span
               className={cn(
                 "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
-                PROCESSO_STATUS_COLORS[processo.status]
+                PROCESSO_STATUS_COLORS[localProcesso.status]
               )}
             >
-              {PROCESSO_STATUS_LABELS[processo.status]}
+              {PROCESSO_STATUS_LABELS[localProcesso.status]}
             </span>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            {processo.tribunal && <span>Tribunal: {processo.tribunal}</span>}
-            {processo.vara && <span>Vara: {processo.vara}</span>}
-            {processo.area_juridica && (
-              <span>Área: {AREA_JURIDICA_LABELS[processo.area_juridica]}</span>
+            {localProcesso.tribunal && <span>Tribunal: {localProcesso.tribunal}</span>}
+            {localProcesso.vara && <span>Vara: {localProcesso.vara}</span>}
+            {localProcesso.area_juridica && (
+              <span>Área: {AREA_JURIDICA_LABELS[localProcesso.area_juridica]}</span>
             )}
           </div>
         </div>
 
-        {processo.status !== "arquivado" && (
-          <button
-            onClick={() => setShowArchiveConfirm(true)}
-            className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface-elevated transition-colors"
-          >
-            <Archive className="h-3.5 w-3.5" />
-            Arquivar
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {localProcesso.status !== "arquivado" && (
+            <button
+              onClick={() => setShowEditarProcesso(true)}
+              className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface-elevated transition-colors"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Editar
+            </button>
+          )}
+          {localProcesso.status !== "arquivado" && (
+            <button
+              onClick={() => setShowArchiveConfirm(true)}
+              className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface-elevated transition-colors"
+            >
+              <Archive className="h-3.5 w-3.5" />
+              Arquivar
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
@@ -201,7 +223,7 @@ export function ProcessoDetail({ data }: Props) {
         onClose={() => setShowArchiveConfirm(false)}
         onConfirm={handleArchive}
         title="Arquivar processo"
-        description={`Tem certeza que deseja arquivar o processo ${processo.numero_cnj}? Ele não aparecerá mais na lista principal.`}
+        description={`Tem certeza que deseja arquivar o processo ${localProcesso.numero_cnj}? Ele não aparecerá mais na lista principal.`}
         confirmLabel="Arquivar"
         loading={archiving}
       />
