@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     # Workers
     redis_url: str = "redis://localhost:6379/0"
 
+    # RPA / Legal Ops
+    jusbrasil_api_key: str | None = None
+    app_base_url: str = "https://app.juriscai.com.br"
+    rpa_check_interval_hours: int = 1
+
     # App
     app_env: str = "development"
     app_secret_key: str = "change_me"
