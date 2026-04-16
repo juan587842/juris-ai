@@ -131,3 +131,45 @@ def test_calcular_carteira_ativa_vazia():
     resultado = _calcular_carteira_ativa([])
     assert resultado["ativo"] == 0
     assert resultado["total"] == 0
+
+
+def test_calcular_tempo_medio_por_area():
+    processos = [
+        {
+            "area_juridica": "trabalhista",
+            "resultado": "procedente",
+            "created_at": "2024-01-01T00:00:00+00:00",
+            "updated_at": "2024-07-01T00:00:00+00:00",  # ~181 dias
+        },
+        {
+            "area_juridica": "civil",
+            "resultado": "acordo",
+            "created_at": "2024-01-01T00:00:00+00:00",
+            "updated_at": "2024-04-01T00:00:00+00:00",  # ~91 dias
+        },
+    ]
+    resultado = _calcular_tempo_medio(processos)
+    areas = {r["area"]: r for r in resultado}
+    assert "trabalhista" in areas
+    assert "civil" in areas
+    assert areas["trabalhista"]["media_dias"] > 0
+    assert areas["trabalhista"]["total"] == 1
+    assert areas["civil"]["media_dias"] > 0
+
+
+def test_calcular_tempo_medio_ignora_sem_resultado():
+    processos = [
+        {
+            "area_juridica": "civil",
+            "resultado": None,
+            "created_at": "2024-01-01T00:00:00+00:00",
+            "updated_at": "2024-06-01T00:00:00+00:00",
+        },
+    ]
+    resultado = _calcular_tempo_medio(processos)
+    assert resultado == []
+
+
+def test_calcular_tempo_medio_vazio():
+    resultado = _calcular_tempo_medio([])
+    assert resultado == []
