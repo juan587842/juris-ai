@@ -71,6 +71,7 @@ class ProcessoOut(BaseModel):
     vara: str | None
     area_juridica: AreaJuridica | None
     status: str
+    resultado: Literal["procedente", "improcedente", "acordo", "desistencia"] | None = None
     monitorar: bool
     notificar_cliente: bool
     ultima_verificacao_at: datetime | None
@@ -111,6 +112,7 @@ class ProcessoUpdate(BaseModel):
     vara: str | None = Field(default=None, max_length=200)
     area_juridica: AreaJuridica | None = None
     status: ProcessoStatus | None = None
+    resultado: Literal["procedente", "improcedente", "acordo", "desistencia"] | None = None
 
 
 class AndamentoCreate(BaseModel):
