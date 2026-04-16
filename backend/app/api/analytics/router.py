@@ -138,7 +138,10 @@ def _calcular_origem_leads(leads: list[dict]) -> list[dict]:
 
 
 def _calcular_carteira_ativa(processos: list[dict]) -> dict:
-    """Conta processos por status (sem filtro de período)."""
+    """Conta processos por status (sem filtro de período).
+
+    Status possíveis: ativo, suspenso, finalizado, arquivado.
+    """
     contagem: dict[str, int] = {}
     for p in processos:
         s = p.get("status") or "ativo"
@@ -147,6 +150,7 @@ def _calcular_carteira_ativa(processos: list[dict]) -> dict:
         "ativo": contagem.get("ativo", 0),
         "suspenso": contagem.get("suspenso", 0),
         "finalizado": contagem.get("finalizado", 0),
+        "arquivado": contagem.get("arquivado", 0),
         "total": sum(contagem.values()),
     }
 
@@ -160,36 +164,46 @@ async def get_analytics(
     periodo: str = Query(default="30d", pattern="^(30d|90d|365d)$"),
 ) -> dict:
     """Retorna métricas estratégicas do escritório para o período especificado."""
+    from fastapi import HTTPException
+
     dias = _PERIODO_DIAS[periodo]
     cutoff = _cutoff(dias)
-    supabase = await get_supabase()
 
-    # Leads criados no período (funil + origem)
-    leads_res = (
-        await supabase.table("leads")
-        .select("status, origem, created_at")
-        .gte("created_at", cutoff)
-        .execute()
-    )
-    leads = leads_res.data or []
+    try:
+        supabase = await get_supabase()
 
-    # Oportunidades criadas no período, excluindo perdidas (receita)
-    ops_res = (
-        await supabase.table("oportunidades")
-        .select("area_juridica, valor_estimado, estagio, created_at")
-        .gte("created_at", cutoff)
-        .neq("estagio", "perdido")
-        .execute()
-    )
-    ops = ops_res.data or []
+        # Leads criados no período (funil + origem)
+        leads_res = (
+            await supabase.table("leads")
+            .select("status, origem, created_at")
+            .gte("created_at", cutoff)
+            .execute()
+        )
+        leads = leads_res.data or []
 
-    # Todos os processos (taxa de êxito, tempo médio, tribunal e carteira)
-    todos_proc_res = (
-        await supabase.table("processos")
-        .select("area_juridica, status, tribunal, resultado, created_at, updated_at")
-        .execute()
-    )
-    todos_processos = todos_proc_res.data or []
+        # Oportunidades criadas no período, excluindo perdidas (receita)
+        ops_res = (
+            await supabase.table("oportunidades")
+            .select("area_juridica, valor_estimado, estagio, created_at")
+            .gte("created_at", cutoff)
+            .neq("estagio", "perdido")
+            .execute()
+        )
+        ops = ops_res.data or []
+
+        # Todos os processos (taxa de êxito, tempo médio, tribunal e carteira)
+        # limit defensivo de 5000 registros
+        todos_proc_res = (
+            await supabase.table("processos")
+            .select("area_juridica, status, tribunal, resultado, created_at, updated_at")
+            .limit(5000)
+            .execute()
+        )
+        todos_processos = todos_proc_res.data or []
+
+    except Exception as exc:
+        logger.error("Erro ao buscar dados de analytics: %s", exc)
+        raise HTTPException(status_code=503, detail="Serviço temporariamente indisponível") from exc
 
     return {
         "funil_conversao": _calcular_funil(leads),
