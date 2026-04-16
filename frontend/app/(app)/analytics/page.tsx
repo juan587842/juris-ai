@@ -34,15 +34,17 @@ export default function AnalyticsPage() {
   const [periodo, setPeriodo] = useState<Periodo>("30d");
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     setError(null);
     api
       .get<AnalyticsData>(`/api/analytics?periodo=${periodo}`)
-      .then(setDados)
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : "Erro ao carregar analytics")
-      )
-      .finally(() => setLoading(false));
+      .then((data) => { if (!cancelled) setDados(data); })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Erro ao carregar analytics");
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [periodo]);
 
   return (
