@@ -100,3 +100,32 @@ async def test_rotear_para_triagem_quando_sem_keyword():
         )
 
     assert result == "resposta triagem"
+
+
+@pytest.mark.asyncio
+async def test_rotear_para_triagem_quando_juridico_retorna_none():
+    """Quando juridico.consultar_processos retorna None, deve fazer fallback para triagem."""
+    from app.agents.router import rotear_mensagem
+
+    mock_supabase = MagicMock()
+    chain = MagicMock()
+    chain.execute = AsyncMock(return_value=MagicMock(data=[{"id": "proc-1"}]))
+    mock_supabase.table.return_value.select.return_value \
+        .eq.return_value.neq.return_value.limit.return_value = chain
+
+    with (
+        patch("app.agents.router.get_supabase", AsyncMock(return_value=mock_supabase)),
+        patch("app.agents.juridico.consultar_processos",
+              AsyncMock(return_value=None)),
+        patch("app.agents.triagem.processar_mensagem",
+              AsyncMock(return_value="resposta triagem")),
+    ):
+        result = await rotear_mensagem(
+            conversation_id="conv-1",
+            lead_id="lead-1",
+            lead_phone="+5511999999999",
+            historico=[],
+            nova_mensagem="qual o status do meu processo?",
+        )
+
+    assert result == "resposta triagem"

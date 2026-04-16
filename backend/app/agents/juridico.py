@@ -103,6 +103,6 @@ async def consultar_processos(
         response = await llm.chat.completions.create(model=model, messages=messages)
         return response.choices[0].message.content or ""
 
-    except Exception as exc:
-        logger.exception("Erro ao consultar processos", lead_id=lead_id, exc_info=exc)
+    except Exception:
+        logger.exception("Erro ao consultar processos", lead_id=lead_id)
         return None
