@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { api } from "@/lib/api";
 import type { Processo, ResultadoProcesso } from "@/types/processos";
+import { RESULTADO_LABELS } from "@/types/processos";
 
 interface Props {
   open: boolean;
@@ -12,12 +13,9 @@ interface Props {
   onUpdated: (p: Processo) => void;
 }
 
-const RESULTADO_OPTIONS: { value: ResultadoProcesso; label: string }[] = [
-  { value: "procedente", label: "Procedente" },
-  { value: "improcedente", label: "Improcedente" },
-  { value: "acordo", label: "Acordo" },
-  { value: "desistencia", label: "Desistência" },
-];
+const RESULTADO_OPTIONS = (Object.keys(RESULTADO_LABELS) as ResultadoProcesso[]).map(
+  (v) => ({ value: v, label: RESULTADO_LABELS[v] })
+);
 
 const inputClass =
   "w-full rounded-lg border border-border bg-surface-elevated/50 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 transition-colors focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30";
