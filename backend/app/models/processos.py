@@ -71,9 +71,9 @@ class ProcessoOut(BaseModel):
     vara: str | None
     area_juridica: AreaJuridica | None
     status: str
-    monitorar: bool
-    notificar_cliente: bool
-    ultima_verificacao_at: datetime | None
+    monitorar: bool = False
+    notificar_cliente: bool = False
+    ultima_verificacao_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 

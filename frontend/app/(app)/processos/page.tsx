@@ -17,12 +17,17 @@ export default function ProcessosPage() {
   const [processos, setProcessos] = useState<Processo[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     api
       .get<Processo[]>("/api/processos?limit=200")
       .then((data) => setProcessos(data))
+      .catch((err) => {
+        console.error("Erro ao carregar processos:", err);
+        setError(err?.message ?? "Erro ao carregar processos");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -63,6 +68,12 @@ export default function ProcessosPage() {
         {loading ? (
           <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
             Carregando…
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-full gap-2 text-destructive">
+            <Scale className="h-8 w-8 opacity-30" />
+            <p className="text-sm font-medium">Falha ao carregar processos</p>
+            <p className="text-xs text-muted-foreground">{error}</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
