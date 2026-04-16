@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { Conversation } from "@/types/chat";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,21 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function ConversationList({ selectedId, onSelect }: Props) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
+  const selectedIdRef = useRef(selectedId);
   const supabase = createBrowserClient();
+
+  // Sincroniza ref com prop e zera badge ao selecionar conversa
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+    if (selectedId) {
+      setUnreadCounts((prev) => {
+        const next = new Map(prev);
+        next.delete(selectedId);
+        return next;
+      });
+    }
+  }, [selectedId]);
 
   useEffect(() => {
     async function load() {
@@ -44,7 +58,7 @@ export function ConversationList({ selectedId, onSelect }: Props) {
     }
     load();
 
-    const channel = supabase
+    const convChannel = supabase
       .channel("conversations-realtime")
       .on(
         "postgres_changes",
@@ -53,7 +67,29 @@ export function ConversationList({ selectedId, onSelect }: Props) {
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    // Conta mensagens não lidas para conversas não selecionadas
+    const msgChannel = supabase
+      .channel("messages-unread")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const msg = payload.new as { conversation_id: string; sender_type: string };
+          if (msg.sender_type !== "lead") return;
+          if (msg.conversation_id === selectedIdRef.current) return;
+          setUnreadCounts((prev) => {
+            const next = new Map(prev);
+            next.set(msg.conversation_id, (next.get(msg.conversation_id) ?? 0) + 1);
+            return next;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(convChannel);
+      supabase.removeChannel(msgChannel);
+    };
   }, []);
 
   if (conversations.length === 0) {
@@ -70,6 +106,7 @@ export function ConversationList({ selectedId, onSelect }: Props) {
     <div className="flex-1 overflow-y-auto">
       {conversations.map((conv) => {
         const name = conv.leads?.nome || conv.leads?.telefone || "Sem nome";
+        const unread = unreadCounts.get(conv.id) ?? 0;
         return (
           <button
             key={conv.id}
@@ -89,9 +126,16 @@ export function ConversationList({ selectedId, onSelect }: Props) {
                 />
                 <span className="font-medium text-sm truncate">{name}</span>
               </div>
-              <span className="text-xs text-muted-foreground flex-shrink-0">
-                {formatTime(conv.last_message_at)}
-              </span>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                {unread > 0 && (
+                  <span className="rounded-full bg-primary px-1.5 py-0.5 text-xs font-bold text-primary-foreground leading-none">
+                    {unread}
+                  </span>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  {formatTime(conv.last_message_at)}
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-1 mt-0.5 pl-4">
               {conv.ai_enabled ? (
