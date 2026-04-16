@@ -62,8 +62,9 @@ export function FinalizarProcessoModal({ open, onClose, processo, onUpdated }: P
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="label-caps mb-1.5 block">Resultado *</label>
+          <label htmlFor="resultado-select" className="label-caps mb-1.5 block">Resultado *</label>
           <select
+            id="resultado-select"
             value={resultado}
             onChange={(e) => setResultado(e.target.value as ResultadoProcesso | "")}
             className={inputClass}
