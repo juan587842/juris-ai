@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
+from app.api.analytics.router import router as analytics_router
 from app.api.chat.router import router as chat_router
 from app.api.crm.router import router as crm_router
 from app.api.dashboard.router import router as dashboard_router
@@ -51,6 +52,7 @@ app.add_middleware(
 )
 
 
+app.include_router(analytics_router, prefix="/api")
 app.include_router(evolution_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
 app.include_router(crm_router, prefix="/api")
