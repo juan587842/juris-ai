@@ -1,0 +1,73 @@
+<h2>Design — Seção 1: Backend</h2>
+<p class="subtitle">Arquitetura do roteamento de intenção + agente jurídico. Leia e diga se aprova.</p>
+
+<div class="section">
+  <h3>Fluxo de roteamento (evolution.py → agentes)</h3>
+  <div class="mockup">
+    <div class="mockup-header">_processar_com_ia() — novo fluxo</div>
+    <div class="mockup-body" style="font-size:13px;line-height:1.8">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="background:rgba(255,255,255,.06);border-radius:6px;padding:10px">
+          <strong>1. Mensagem chega via webhook</strong><br>
+          <span style="opacity:.7">WhatsApp → evolution.py → _processar_com_ia()</span>
+        </div>
+        <div style="text-align:center;opacity:.5">↓</div>
+        <div style="background:rgba(201,169,110,.12);border-radius:6px;padding:10px;border-left:3px solid #c9a96e">
+          <strong>2. Roteador (nova função: <code>rotear_mensagem()</code>)</strong><br>
+          <span style="opacity:.7">Verifica: lead tem processos cadastrados no sistema?</span><br>
+          <span style="opacity:.7">+ intenção parece ser sobre o processo? (keywords: "processo", "andamento", "audiência", "prazo", "decisão", "quando"…)</span>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:4px">
+          <div style="flex:1;background:rgba(99,102,241,.12);border-radius:6px;padding:10px;border-left:3px solid #818cf8">
+            <strong>SIM → agents/juridico.py</strong><br>
+            <span style="font-size:12px;opacity:.7">Busca processos pelo lead_id<br>Busca andamentos recentes<br>Responde em linguagem simples via IA</span>
+          </div>
+          <div style="flex:1;background:rgba(34,197,94,.1);border-radius:6px;padding:10px;border-left:3px solid #22c55e">
+            <strong>NÃO → agents/triagem.py</strong><br>
+            <span style="font-size:12px;opacity:.7">Fluxo existente inalterado<br>(LGPD → coleta → CRM)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Agente Jurídico (<code>agents/juridico.py</code>) — novo</h3>
+  <div class="mockup">
+    <div class="mockup-header">Lógica interna</div>
+    <div class="mockup-body" style="font-size:13px;line-height:1.8">
+      <ol style="padding-left:18px;opacity:.9">
+        <li>Recebe <code>lead_id</code> + histórico da conversa</li>
+        <li>Busca no Supabase: <code>processos WHERE cliente_id = lead_id</code></li>
+        <li>Busca <code>andamentos</code> recentes (últimos 30 dias) de cada processo</li>
+        <li>Monta contexto: número CNJ, tribunal, andamentos, intimações</li>
+        <li>Chama o LLM com prompt especializado: <em>"Explique o andamento abaixo em linguagem simples, sem juridiquês, para o cliente…"</em></li>
+        <li>Retorna a resposta ao webhook, que a envia via WhatsApp</li>
+      </ol>
+      <div style="margin-top:8px;background:rgba(255,255,255,.04);border-radius:6px;padding:10px;font-size:12px">
+        <strong>Sem processos vinculados ao lead?</strong><br>
+        <span style="opacity:.7">Retorna None → roteador cai de volta no triagem para lidar com o cliente</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Arquivos afetados</h3>
+  <div style="font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div style="background:rgba(34,197,94,.08);border-radius:6px;padding:10px">
+      <div style="font-size:11px;text-transform:uppercase;opacity:.6;margin-bottom:4px">Criar</div>
+      <code>backend/app/agents/juridico.py</code><br>
+      <code>backend/app/agents/prompts/juridico.md</code><br>
+      <code>backend/tests/agents/test_juridico.py</code>
+    </div>
+    <div style="background:rgba(255,165,.08);border-radius:6px;padding:10px">
+      <div style="font-size:11px;text-transform:uppercase;opacity:.6;margin-bottom:4px">Modificar</div>
+      <code>backend/app/api/webhooks/evolution.py</code><br>
+      <span style="opacity:.6;font-size:12px">(adicionar rotear_mensagem antes de chamar triagem)</span>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle">O triagem.py não é modificado. Aprova este design de backend? Responda no terminal.</p>

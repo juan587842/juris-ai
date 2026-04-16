@@ -1,0 +1,65 @@
+<h2>Como funciona o monitoramento de processos?</h2>
+<p class="subtitle">Um resumo visual do fluxo — só para alinhar o que vamos construir</p>
+
+<div style="display:flex;flex-direction:column;gap:16px;max-width:720px;margin:0 auto">
+
+  <!-- Passo 1 -->
+  <div style="display:flex;align-items:flex-start;gap:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:18px">
+    <div style="background:#c9a84c;color:#0a0e1a;font-weight:700;font-size:18px;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+    <div>
+      <h3 style="margin:0 0 4px">Cadastro do processo</h3>
+      <p style="margin:0;opacity:.75">O advogado cadastra o número CNJ do processo no Juris AI (ex: <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px">0001234-56.2024.8.26.0100</code>). Só isso — o sistema cuida do resto.</p>
+    </div>
+  </div>
+
+  <!-- Seta -->
+  <div style="text-align:center;font-size:22px;opacity:.4">↓</div>
+
+  <!-- Passo 2 -->
+  <div style="display:flex;align-items:flex-start;gap:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:18px">
+    <div style="background:#c9a84c;color:#0a0e1a;font-weight:700;font-size:18px;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+    <div>
+      <h3 style="margin:0 0 4px">Robô verifica automaticamente</h3>
+      <p style="margin:0;opacity:.75">A cada hora (ou no horário configurado), um script Python consulta a <strong>API do Jusbrasil</strong> perguntando: <em>"tem alguma movimentação nova neste processo?"</em>. O Jusbrasil já agrega dados de +100 tribunais (TJSP, TRT, STJ, TRFs, DJEN, etc.).</p>
+    </div>
+  </div>
+
+  <!-- Seta -->
+  <div style="text-align:center;font-size:22px;opacity:.4">↓</div>
+
+  <!-- Passo 3 - bifurcação -->
+  <div style="display:flex;gap:12px">
+    <div style="flex:1;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:16px">
+      <div style="color:#22c55e;font-weight:600;margin-bottom:6px">✅ Tem novidade</div>
+      <p style="margin:0;font-size:14px;opacity:.8">Juris AI salva a movimentação no banco e dispara alertas instantâneos para o advogado.</p>
+    </div>
+    <div style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px">
+      <div style="font-weight:600;margin-bottom:6px;opacity:.5">— Sem novidade</div>
+      <p style="margin:0;font-size:14px;opacity:.5">Nada a fazer. O robô dorme e verifica novamente no próximo ciclo.</p>
+    </div>
+  </div>
+
+  <!-- Seta -->
+  <div style="text-align:center;font-size:22px;opacity:.4">↓</div>
+
+  <!-- Passo 4 -->
+  <div style="display:flex;align-items:flex-start;gap:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:18px">
+    <div style="background:#c9a84c;color:#0a0e1a;font-weight:700;font-size:18px;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+    <div>
+      <h3 style="margin:0 0 4px">Alerta chega ao advogado</h3>
+      <p style="margin:0;opacity:.75">O advogado recebe uma notificação com o resumo da movimentação — sem precisar entrar no portal do tribunal. Pode ser via painel, e-mail ou WhatsApp.</p>
+    </div>
+  </div>
+
+  <!-- Passo 5 -->
+  <div style="display:flex;align-items:flex-start;gap:16px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:18px">
+    <div style="background:#c9a84c;color:#0a0e1a;font-weight:700;font-size:18px;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+    <div>
+      <h3 style="margin:0 0 4px">IA traduz o juridiquês <span style="font-size:13px;opacity:.6;font-weight:400">(diferencial)</span></h3>
+      <p style="margin:0;opacity:.75">Além de alertar o advogado, a IA pode enviar ao cliente uma mensagem simples no WhatsApp: <em>"Seu processo teve uma atualização hoje: o juiz marcou uma audiência para 20/05."</em></p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:24px;text-align:center">Entendeu o fluxo? Responda no terminal com dúvidas ou diga "entendi" para continuar.</p>

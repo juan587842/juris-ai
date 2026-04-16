@@ -1,0 +1,64 @@
+<h2>Abordagens — Fase 9: Atendimento Omnicanal</h2>
+<p class="subtitle">Três formas de completar o módulo. Selecione a que preferir.</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Realtime + Tira-dúvidas integrado no agente atual</h3>
+      <p>Adiciona Supabase Realtime ao inbox existente e expande o agente de triagem para responder sobre andamentos. Menor superfície de mudança.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Prós</h4><ul>
+          <li>Um único agente para todo o fluxo WhatsApp</li>
+          <li>Menos arquivos novos</li>
+          <li>Reutiliza contexto da conversa já carregado</li>
+        </ul></div>
+        <div class="cons"><h4>Contras</h4><ul>
+          <li>Agente de triagem fica mais complexo (triagem + jurídico)</li>
+          <li>Mais difícil testar as duas responsabilidades separadamente</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B ⭐ Recomendada</div>
+    <div class="content">
+      <h3>Realtime + Agente jurídico separado (roteamento por intenção)</h3>
+      <p>O agente de triagem detecta a intenção ("quer saber sobre processo") e delega para um agente jurídico especializado. Inbox recebe Supabase Realtime.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Prós</h4><ul>
+          <li>Separação clara de responsabilidades</li>
+          <li>Agente jurídico pode evoluir independente da triagem</li>
+          <li>Mais fácil de testar e depurar</li>
+          <li>Alinha com o padrão LangGraph/Agno do projeto</li>
+        </ul></div>
+        <div class="cons"><h4>Contras</h4><ul>
+          <li>Um arquivo a mais (agents/juridico.py)</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Realtime apenas (tira-dúvidas fica para fase seguinte)</h3>
+      <p>Foca só em tempo real no inbox. A IA continua com triagem básica e a feature de andamentos fica para uma fase separada.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Prós</h4><ul>
+          <li>Menor escopo, entrega mais rápida</li>
+          <li>Inbox funcional ao vivo imediatamente</li>
+        </ul></div>
+        <div class="cons"><h4>Contras</h4><ul>
+          <li>Deixa a feature mais diferenciada para depois</li>
+          <li>Usuário já pediu as duas juntas</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">Clique para selecionar e responda no terminal.</p>

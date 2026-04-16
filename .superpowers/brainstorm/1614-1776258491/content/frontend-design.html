@@ -1,0 +1,83 @@
+<h2>Design — Seção 3: Frontend</h2>
+<p class="subtitle">Página de detalhe do processo com novo card de Monitoramento. Clique na opção que preferir.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Card lateral de Monitoramento</h3>
+      <p>Sidebar direita com toggles e status. Movimentações ficam no painel principal em lista cronológica.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">processos/[id] — Layout A</div>
+        <div class="mockup-body" style="display:flex;gap:12px;font-size:12px">
+          <div style="flex:2">
+            <div style="background:rgba(255,255,255,.06);border-radius:6px;padding:10px;margin-bottom:8px">
+              <div style="font-weight:600;margin-bottom:6px">📄 0001234-56.2024.8.26.0100</div>
+              <div style="opacity:.6;font-size:11px">TJSP · Vara Cível · Direito do Consumidor · Ativo</div>
+            </div>
+            <div style="background:rgba(255,255,255,.04);border-radius:6px;padding:10px">
+              <div style="font-weight:600;margin-bottom:8px">Movimentações</div>
+              <div style="border-left:2px solid #c9a84c;padding-left:8px;margin-bottom:6px;font-size:11px">
+                <div style="opacity:.6">15/04/2026</div>
+                <div>Juntada de petição — Contestação da parte ré</div>
+                <span style="background:rgba(201,168,76,.15);color:#c9a84c;font-size:10px;padding:1px 5px;border-radius:3px">PDF</span>
+              </div>
+              <div style="border-left:2px solid rgba(255,255,255,.15);padding-left:8px;font-size:11px;opacity:.5">
+                <div>10/04/2026</div>
+                <div>Conclusão para despacho</div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+            <div style="background:rgba(255,255,255,.04);border-radius:6px;padding:10px">
+              <div style="font-weight:600;margin-bottom:8px;font-size:11px">🤖 Monitoramento</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px">
+                <span>Monitorar</span>
+                <span style="background:#22c55e;border-radius:10px;padding:2px 8px;font-size:10px">ON</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:11px">
+                <span>Notif. cliente</span>
+                <span style="background:rgba(255,255,255,.1);border-radius:10px;padding:2px 8px;font-size:10px">OFF</span>
+              </div>
+              <div style="opacity:.5;font-size:10px">Última verificação: 15/04 14h00</div>
+              <button class="mock-button" style="margin-top:8px;font-size:10px;padding:4px 8px;width:100%">Verificar agora</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Abas na página do processo</h3>
+      <p>A página ganha abas: Detalhes / Movimentações / Monitoramento. Cada aba focada em uma coisa.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">processos/[id] — Layout B</div>
+        <div class="mockup-body" style="font-size:12px">
+          <div style="background:rgba(255,255,255,.06);border-radius:6px;padding:10px;margin-bottom:8px">
+            <div style="font-weight:600;margin-bottom:4px">📄 0001234-56.2024.8.26.0100</div>
+            <div style="opacity:.6;font-size:11px">TJSP · Vara Cível · Direito do Consumidor · Ativo</div>
+          </div>
+          <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:10px">
+            <div style="padding:6px 12px;font-size:11px;border-bottom:2px solid rgba(255,255,255,.3);opacity:.5">Detalhes</div>
+            <div style="padding:6px 12px;font-size:11px;border-bottom:2px solid #c9a84c;color:#c9a84c">Movimentações</div>
+            <div style="padding:6px 12px;font-size:11px;border-bottom:2px solid transparent;opacity:.5">🤖 Monitoramento</div>
+          </div>
+          <div style="border-left:2px solid #c9a84c;padding-left:8px;margin-bottom:6px;font-size:11px">
+            <div style="opacity:.6">15/04/2026</div>
+            <div>Juntada de petição — Contestação da parte ré</div>
+            <span style="background:rgba(201,168,76,.15);color:#c9a84c;font-size:10px;padding:1px 5px;border-radius:3px">PDF extraído</span>
+          </div>
+          <div style="border-left:2px solid rgba(255,255,255,.15);padding-left:8px;font-size:11px;opacity:.5">
+            <div>10/04/2026</div>
+            <div>Conclusão para despacho</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">Selecione o layout preferido e responda no terminal.</p>
