@@ -2,6 +2,7 @@
 import pytest
 from uuid import uuid4
 from datetime import datetime
+from pydantic import ValidationError
 
 from app.models.processos import ProcessoUpdate, ProcessoOut
 
@@ -23,7 +24,6 @@ def test_processo_update_resultado_none_por_padrao():
 
 def test_processo_update_resultado_invalido_raises():
     """Valor fora do Literal deve levantar ValidationError."""
-    from pydantic import ValidationError
     with pytest.raises(ValidationError):
         ProcessoUpdate(resultado="ganho")
 
@@ -62,3 +62,10 @@ def test_processo_out_resultado_none_por_padrao():
     data = _base_processo_out_data()
     p = ProcessoOut(**data)
     assert p.resultado is None
+
+
+def test_processo_out_rejeita_resultado_invalido():
+    """ProcessoOut deve rejeitar valor fora do Literal."""
+    data = _base_processo_out_data(resultado="ganho")
+    with pytest.raises(ValidationError):
+        ProcessoOut(**data)
