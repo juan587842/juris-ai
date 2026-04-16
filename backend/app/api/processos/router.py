@@ -39,7 +39,7 @@ async def _get_processo_or_404(processo_id: UUID) -> dict:
 
 # ─── Listar processos ─────────────────────────────────────────────────────────
 
-@router.get("/", response_model=list[ProcessoOut])
+@router.get("", response_model=list[ProcessoOut])
 async def list_processos(
     current_user: AuthUser,
     status: str | None = None,
@@ -98,7 +98,7 @@ async def get_processo(processo_id: UUID, current_user: AuthUser):
 
 # ─── Criar processo ───────────────────────────────────────────────────────────
 
-@router.post("/", response_model=ProcessoOut, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ProcessoOut, status_code=status.HTTP_201_CREATED)
 async def create_processo(body: ProcessoCreate, current_user: AuthUser):
     supabase = await get_supabase()
 

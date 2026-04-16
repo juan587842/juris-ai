@@ -35,7 +35,6 @@ app = FastAPI(
     description="CRM e Legal Operations para escritórios de advocacia",
     version="0.1.0",
     lifespan=lifespan,
-    redirect_slashes=False,
     docs_url="/docs" if not settings.is_production else None,
     redoc_url="/redoc" if not settings.is_production else None,
 )

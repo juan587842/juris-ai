@@ -34,7 +34,7 @@ async def _get_conversation_or_404(conversation_id: UUID) -> dict:
 
 # ─── Listar conversas ─────────────────────────────────────────────────────────
 
-@router.get("/")
+@router.get("")
 async def list_conversations(
     current_user: AuthUser,
     status: str | None = None,
