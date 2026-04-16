@@ -1,6 +1,6 @@
 -- Adiciona campo resultado em processos para calcular taxa de êxito
 ALTER TABLE processos
-ADD COLUMN resultado text CHECK (resultado IN (
+ADD COLUMN IF NOT EXISTS resultado text CHECK (resultado IN (
   'procedente', 'improcedente', 'acordo', 'desistencia'
 ));
 
