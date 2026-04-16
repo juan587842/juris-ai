@@ -2,6 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.api.chat.router import router as chat_router
 from app.api.crm.router import router as crm_router
@@ -33,9 +35,13 @@ app = FastAPI(
     description="CRM e Legal Operations para escritórios de advocacia",
     version="0.1.0",
     lifespan=lifespan,
+    redirect_slashes=False,
     docs_url="/docs" if not settings.is_production else None,
     redoc_url="/redoc" if not settings.is_production else None,
 )
+
+# Respeita X-Forwarded-Proto/For quando atrás de proxy reverso (nginx, Caddy, EasyPanel)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 app.add_middleware(
     CORSMiddleware,
