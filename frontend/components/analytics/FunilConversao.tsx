@@ -6,12 +6,13 @@ interface Props {
 
 const BARRAS = [
   { key: "novo" as const, label: "Novos", cor: "#818cf8" },
+  { key: "contato_feito" as const, label: "Em contato", cor: "#6366f1" },
   { key: "qualificado" as const, label: "Qualificados", cor: "#a78bfa" },
   { key: "convertido" as const, label: "Convertidos", cor: "#c9a96e" },
 ];
 
 export function FunilConversao({ dados }: Props) {
-  const max = Math.max(dados.novo, dados.qualificado, dados.convertido, 1);
+  const max = Math.max(dados.novo, dados.contato_feito, dados.qualificado, dados.convertido, 1);
 
   return (
     <div

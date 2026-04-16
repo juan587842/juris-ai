@@ -8,7 +8,7 @@ const CORES_ORIGEM: Record<string, string> = {
   whatsapp: "#22c55e",
   indicacao: "#818cf8",
   site: "#f59e0b",
-  landing_page: "#f59e0b",
+  landing_page: "#06b6d4",
   outro: "#6b7280",
 };
 
