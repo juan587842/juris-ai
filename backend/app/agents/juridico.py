@@ -33,71 +33,76 @@ async def consultar_processos(
     """
     supabase = await get_supabase()
 
-    processos_result = (
-        await supabase
-        .table("processos")
-        .select("id, numero_cnj, tribunal, vara, status")
-        .eq("cliente_id", lead_id)
-        .neq("status", "arquivado")
-        .order("created_at", desc=True)
-        .limit(_MAX_PROCESSOS)
-        .execute()
-    )
-
-    if not processos_result.data:
-        return None
-
-    cutoff = (datetime.now(_SP_TZ) - timedelta(days=30)).date().isoformat()
-    contexto_partes: list[str] = []
-
-    for proc in processos_result.data:
-        andamentos_result = (
+    try:
+        processos_result = (
             await supabase
-            .table("andamentos")
-            .select("data_andamento, texto_original, texto_traduzido")
-            .eq("processo_id", proc["id"])
-            .gte("data_andamento", cutoff)
-            .order("data_andamento", desc=True)
-            .limit(_MAX_ANDAMENTOS)
+            .table("processos")
+            .select("id, numero_cnj, tribunal, vara, status")
+            .eq("cliente_id", lead_id)
+            .neq("status", "arquivado")
+            .order("created_at", desc=True)
+            .limit(_MAX_PROCESSOS)
             .execute()
         )
 
-        andamentos = andamentos_result.data or []
-        linha = (
-            f"Processo {proc['numero_cnj']}"
-            f" ({proc.get('tribunal') or 'Tribunal não informado'})"
-            f" — Status: {proc['status']}"
-        )
+        if not processos_result.data:
+            return None
 
-        if andamentos:
-            movs = "\n".join(
-                f"  - {a['data_andamento']}: {a.get('texto_traduzido') or a['texto_original']}"
-                for a in andamentos
+        cutoff = (datetime.now(_SP_TZ) - timedelta(days=30)).date().isoformat()
+        contexto_partes: list[str] = []
+
+        for proc in processos_result.data:
+            andamentos_result = (
+                await supabase
+                .table("andamentos")
+                .select("data_andamento, texto_original, texto_traduzido")
+                .eq("processo_id", proc["id"])
+                .gte("data_andamento", cutoff)
+                .order("data_andamento", desc=True)
+                .limit(_MAX_ANDAMENTOS)
+                .execute()
             )
-            linha += f"\nMovimentações recentes:\n{movs}"
-        else:
-            linha += "\nSem movimentações nos últimos 30 dias."
 
-        contexto_partes.append(linha)
+            andamentos = andamentos_result.data or []
+            linha = (
+                f"Processo {proc['numero_cnj']}"
+                f" ({proc.get('tribunal') or 'Tribunal não informado'})"
+                f" — Status: {proc['status']}"
+            )
 
-    contexto = "\n\n".join(contexto_partes)
+            if andamentos:
+                movs = "\n".join(
+                    f"  - {a['data_andamento']}: {a.get('texto_traduzido') or a['texto_original']}"
+                    for a in andamentos
+                )
+                linha += f"\nMovimentações recentes:\n{movs}"
+            else:
+                linha += "\nSem movimentações nos últimos 30 dias."
 
-    messages: list[dict] = [{"role": "system", "content": _SYSTEM_PROMPT}]
+            contexto_partes.append(linha)
 
-    for msg in historico[-10:]:
-        content = msg.get("content") or ""
-        if not content:
-            continue
-        role = "user" if msg.get("sender_type") == "lead" else "assistant"
-        messages.append({"role": role, "content": content})
+        contexto = "\n\n".join(contexto_partes)
 
-    messages.append({
-        "role": "user",
-        "content": f"{nova_mensagem}\n\n[Dados dos seus processos no escritório:]\n{contexto}",
-    })
+        messages: list[dict] = [{"role": "system", "content": _SYSTEM_PROMPT}]
 
-    llm = get_llm_client()
-    model = get_model()
+        for msg in historico[-10:]:
+            content = msg.get("content") or ""
+            if not content:
+                continue
+            role = "user" if msg.get("sender_type") == "lead" else "assistant"
+            messages.append({"role": role, "content": content})
 
-    response = await llm.chat.completions.create(model=model, messages=messages)
-    return response.choices[0].message.content or ""
+        messages.append({
+            "role": "user",
+            "content": f"{nova_mensagem}\n\n[Dados dos seus processos no escritório:]\n{contexto}",
+        })
+
+        llm = get_llm_client()
+        model = get_model()
+
+        response = await llm.chat.completions.create(model=model, messages=messages)
+        return response.choices[0].message.content or ""
+
+    except Exception as exc:
+        logger.exception("Erro ao consultar processos", lead_id=lead_id, exc_info=exc)
+        return None
