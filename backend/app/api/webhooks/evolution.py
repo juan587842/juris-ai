@@ -193,7 +193,7 @@ async def _processar_com_ia(
     lead_phone: str,
 ) -> None:
     """Busca histórico, roda o agente e envia a resposta via WhatsApp."""
-    from app.agents.triagem import processar_mensagem
+    from app.agents.router import rotear_mensagem
 
     try:
         supabase = await get_supabase()
@@ -218,7 +218,7 @@ async def _processar_com_ia(
         # Histórico sem a última mensagem (já será adicionada pelo agente)
         historico_anterior = [m for m in historico[:-1]]
 
-        resposta = await processar_mensagem(
+        resposta = await rotear_mensagem(
             conversation_id=conversation_id,
             lead_id=lead_id,
             lead_phone=lead_phone,
