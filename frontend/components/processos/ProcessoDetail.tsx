@@ -2,17 +2,18 @@
 
 import { useState } from "react";
 import type { ProcessoDetail as ProcessoDetailType } from "@/types/processos";
-import { PROCESSO_STATUS_LABELS, PROCESSO_STATUS_COLORS } from "@/types/processos";
+import { PROCESSO_STATUS_LABELS, PROCESSO_STATUS_COLORS, RESULTADO_LABELS } from "@/types/processos";
 import { AREA_JURIDICA_LABELS } from "@/types/crm";
 import { AndamentoTimeline } from "./AndamentoTimeline";
 import { IntimacaoCard } from "./IntimacaoCard";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { Scale, Archive, Plus, Pencil } from "lucide-react";
+import { Scale, Archive, Plus, Pencil, CheckCircle } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EditarProcessoModal } from "./EditarProcessoModal";
+import { FinalizarProcessoModal } from "./FinalizarProcessoModal";
 import { MonitoramentoTab } from "./MonitoramentoTab";
 
 interface Props {
@@ -31,6 +32,7 @@ export function ProcessoDetail({ data }: Props) {
   const [archiving, setArchiving] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [showEditarProcesso, setShowEditarProcesso] = useState(false);
+  const [showFinalizar, setShowFinalizar] = useState(false);
   const [localProcesso, setLocalProcesso] = useState(processo);
   const [localAndamentos, setLocalAndamentos] = useState(andamentos);
   const router = useRouter();
@@ -74,6 +76,14 @@ export function ProcessoDetail({ data }: Props) {
         onUpdated={(updated) => setLocalProcesso(updated)}
       />
 
+      {/* FinalizarProcessoModal */}
+      <FinalizarProcessoModal
+        open={showFinalizar}
+        onClose={() => setShowFinalizar(false)}
+        processo={localProcesso}
+        onUpdated={(updated) => setLocalProcesso(updated)}
+      />
+
       {/* Header */}
       <div className="border-b px-6 py-4 flex items-start justify-between gap-4">
         <div>
@@ -88,6 +98,23 @@ export function ProcessoDetail({ data }: Props) {
             >
               {PROCESSO_STATUS_LABELS[localProcesso.status]}
             </span>
+            {localProcesso.resultado && (
+              <span
+                className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{
+                  background:
+                    localProcesso.resultado === "procedente" || localProcesso.resultado === "acordo"
+                      ? "rgba(34,197,94,.15)"
+                      : "rgba(245,158,11,.15)",
+                  color:
+                    localProcesso.resultado === "procedente" || localProcesso.resultado === "acordo"
+                      ? "#22c55e"
+                      : "#f59e0b",
+                }}
+              >
+                {RESULTADO_LABELS[localProcesso.resultado]}
+              </span>
+            )}
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
             {localProcesso.tribunal && <span>Tribunal: {localProcesso.tribunal}</span>}
@@ -106,6 +133,15 @@ export function ProcessoDetail({ data }: Props) {
             >
               <Pencil className="h-3.5 w-3.5" />
               Editar
+            </button>
+          )}
+          {localProcesso.status !== "finalizado" && localProcesso.status !== "arquivado" && (
+            <button
+              onClick={() => setShowFinalizar(true)}
+              className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-surface-elevated transition-colors"
+            >
+              <CheckCircle className="h-3.5 w-3.5" />
+              Finalizar
             </button>
           )}
           {localProcesso.status !== "arquivado" && (
