@@ -1,6 +1,20 @@
 import type { AreaJuridica } from "./crm";
 
 export type ProcessoStatus = "ativo" | "suspenso" | "finalizado" | "arquivado";
+
+export type ResultadoProcesso =
+  | "procedente"
+  | "improcedente"
+  | "acordo"
+  | "desistencia";
+
+export const RESULTADO_LABELS: Record<ResultadoProcesso, string> = {
+  procedente: "Procedente",
+  improcedente: "Improcedente",
+  acordo: "Acordo",
+  desistencia: "Desistência",
+};
+
 export type FonteIntimacao = "DJEN" | "DJE" | "domicilio_judicial";
 
 export interface Andamento {
@@ -38,6 +52,7 @@ export interface Processo {
   vara: string | null;
   area_juridica: AreaJuridica | null;
   status: ProcessoStatus;
+  resultado: ResultadoProcesso | null;
   monitorar: boolean;
   notificar_cliente: boolean;
   ultima_verificacao_at: string | null;
