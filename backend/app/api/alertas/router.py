@@ -3,10 +3,8 @@ from typing import Literal
 
 from fastapi import APIRouter
 
-from app.core.logging import get_logger
-
+# Endpoint GET /alertas adicionado na Task 2 (ver router.py após implementação completa)
 router = APIRouter(prefix="/alertas", tags=["alertas"])
-logger = get_logger("alertas.router")
 
 SeveridadeType = Literal["alta", "media", "baixa"]
 
