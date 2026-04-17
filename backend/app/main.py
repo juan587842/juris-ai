@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
+from app.api.alertas.router import router as alertas_router
 from app.api.analytics.router import router as analytics_router
 from app.api.chat.router import router as chat_router
 from app.api.crm.router import router as crm_router
@@ -59,6 +60,7 @@ app.include_router(crm_router, prefix="/api")
 app.include_router(processos_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
 app.include_router(public_leads_router, prefix="/api")
+app.include_router(alertas_router, prefix="/api")
 
 
 @app.get("/health", tags=["sistema"])
