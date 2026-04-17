@@ -1,12 +1,13 @@
 "use client";
 
 import type { Conversation } from "@/types/chat";
-import { Bot, UserCheck, CheckCheck, Phone } from "lucide-react";
+import { Bot, UserCheck, CheckCheck, Phone, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
   conversation: Conversation;
   onTakeOver: () => Promise<void>;
+  onResumeAI: () => Promise<void>;
   onResolve: () => Promise<void>;
   loading?: boolean;
 }
@@ -18,7 +19,13 @@ const STATUS_LABELS: Record<string, string> = {
   pendente: "Pendente",
 };
 
-export function ConversationHeader({ conversation, onTakeOver, onResolve, loading }: Props) {
+export function ConversationHeader({
+  conversation,
+  onTakeOver,
+  onResumeAI,
+  onResolve,
+  loading,
+}: Props) {
   const name = conversation.leads?.nome || conversation.leads?.telefone || "Lead";
 
   return (
@@ -52,28 +59,37 @@ export function ConversationHeader({ conversation, onTakeOver, onResolve, loadin
           <span>{conversation.ai_enabled ? "IA ativa" : "Humano"}</span>
         </div>
 
-        {/* Assumir conversa */}
-        {conversation.ai_enabled && conversation.status !== "resolvida" && (
-          <button
-            onClick={onTakeOver}
-            disabled={loading}
-            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
-          >
-            <UserCheck className="h-3.5 w-3.5" />
-            Assumir
-          </button>
-        )}
-
-        {/* Resolver */}
         {conversation.status !== "resolvida" && (
-          <button
-            onClick={onResolve}
-            disabled={loading}
-            className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-muted disabled:opacity-50 transition-colors"
-          >
-            <CheckCheck className="h-3.5 w-3.5" />
-            Resolver
-          </button>
+          <>
+            {conversation.ai_enabled ? (
+              <button
+                onClick={onTakeOver}
+                disabled={loading}
+                className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              >
+                <UserCheck className="h-3.5 w-3.5" />
+                Assumir
+              </button>
+            ) : (
+              <button
+                onClick={onResumeAI}
+                disabled={loading}
+                className="flex items-center gap-1.5 rounded-md bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-700 disabled:opacity-50 transition-colors"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Retomar IA
+              </button>
+            )}
+
+            <button
+              onClick={onResolve}
+              disabled={loading}
+              className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-muted disabled:opacity-50 transition-colors"
+            >
+              <CheckCheck className="h-3.5 w-3.5" />
+              Resolver
+            </button>
+          </>
         )}
       </div>
     </div>
