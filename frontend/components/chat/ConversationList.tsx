@@ -171,9 +171,15 @@ export function ConversationList({ selectedId, onSelect }: Props) {
       <div className="flex-1 overflow-y-auto">
         {visible.length === 0 ? (
           <div className="flex items-center justify-center text-muted-foreground text-sm p-4 text-center">
-            {search || filter !== "todos"
-              ? "Nenhuma conversa encontrada."
-              : "Nenhuma conversa ativa.\nAguardando mensagens via WhatsApp."}
+            {search || filter !== "todos" ? (
+              "Nenhuma conversa encontrada."
+            ) : (
+              <>
+                Nenhuma conversa ativa.
+                <br />
+                Aguardando mensagens via WhatsApp.
+              </>
+            )}
           </div>
         ) : (
           visible.map((conv) => {
