@@ -60,3 +60,4 @@ skills/
 skills-lock.json
 backend.log
 frontend.log
+.superpowers/
