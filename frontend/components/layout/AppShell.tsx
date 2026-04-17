@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart2, FileText, Inbox, KanbanSquare, LayoutDashboard, LogOut, Scale, Users } from "lucide-react";
+import { BarChart2, Bell, FileText, Inbox, KanbanSquare, LayoutDashboard, LogOut, Scale, Users } from "lucide-react";
 
 import { createBrowserClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api";
 
 interface NavItem {
   href: string;
@@ -19,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/processos", label: "Processos", icon: FileText },
   { href: "/analytics", label: "Analytics", icon: BarChart2 },
+  { href: "/alertas", label: "Alertas", icon: Bell },
 ];
 
 interface AppShellProps {
@@ -29,6 +32,14 @@ interface AppShellProps {
 export function AppShell({ children, userEmail }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [alertasCount, setAlertasCount] = useState(0);
+
+  useEffect(() => {
+    api
+      .get<{ total: number }>("/api/alertas")
+      .then((data) => setAlertasCount(data.total))
+      .catch(() => {});
+  }, []);
 
   async function handleSignOut() {
     const supabase = createBrowserClient();
@@ -75,6 +86,11 @@ export function AppShell({ children, userEmail }: AppShellProps) {
                   }`}
                 />
                 {item.label}
+                {item.href === "/alertas" && alertasCount > 0 && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                    {alertasCount > 99 ? "99+" : alertasCount}
+                  </span>
+                )}
               </Link>
             );
           })}
