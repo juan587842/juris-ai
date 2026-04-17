@@ -129,7 +129,7 @@ async def get_alertas(
     for p in processos_inativos:
         try:
             updated = datetime.fromisoformat(str(p["updated_at"]).replace("Z", "+00:00"))
-            dias = max((now - updated).days, dias_processo)
+            dias = max((now - updated).days, 0)
         except (ValueError, TypeError, KeyError):
             dias = dias_processo
         alertas.append({
@@ -145,7 +145,7 @@ async def get_alertas(
     for lead in leads_inativos:
         try:
             updated = datetime.fromisoformat(str(lead["updated_at"]).replace("Z", "+00:00"))
-            dias = max((now - updated).days, dias_lead)
+            dias = max((now - updated).days, 0)
         except (ValueError, TypeError, KeyError):
             dias = dias_lead
         nome = lead.get("nome") or lead.get("telefone") or "Lead"
@@ -180,7 +180,7 @@ async def get_alertas(
     for op in ops_paradas:
         try:
             updated = datetime.fromisoformat(str(op["updated_at"]).replace("Z", "+00:00"))
-            dias = max((now - updated).days, dias_oportunidade)
+            dias = max((now - updated).days, 0)
         except (ValueError, TypeError, KeyError):
             dias = dias_oportunidade
         alertas.append({
