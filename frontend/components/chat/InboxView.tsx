@@ -36,6 +36,12 @@ export function InboxView({ currentUserId }: Props) {
     setSelected((prev) => prev ? { ...prev, ai_enabled: false, status: "em_atendimento" } : prev);
   }
 
+  async function handleResumeAI() {
+    if (!selected) return;
+    await apiAction(`/api/conversations/${selected.id}/resume-ai`);
+    setSelected((prev) => prev ? { ...prev, ai_enabled: true } : prev);
+  }
+
   async function handleResolve() {
     if (!selected) return;
     await apiAction(`/api/conversations/${selected.id}/resolve`);
@@ -62,6 +68,7 @@ export function InboxView({ currentUserId }: Props) {
             <ConversationHeader
               conversation={selected}
               onTakeOver={handleTakeOver}
+              onResumeAI={handleResumeAI}
               onResolve={handleResolve}
               loading={actionLoading}
             />
