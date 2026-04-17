@@ -12,6 +12,7 @@ router = APIRouter(prefix="/alertas", tags=["alertas"])
 logger = get_logger("alertas.router")
 
 SeveridadeType = Literal["alta", "media", "baixa"]
+_SEVERIDADE_ORDER: dict[str, int] = {"alta": 0, "media": 1, "baixa": 2}
 
 
 # ─── Funções puras de severidade (testáveis sem Supabase) ─────────────────────
@@ -67,8 +68,9 @@ async def get_alertas(
     cutoff_processo = (now - timedelta(days=dias_processo)).isoformat()
     cutoff_lead = (now - timedelta(days=dias_lead)).isoformat()
     cutoff_oportunidade = (now - timedelta(days=dias_oportunidade)).isoformat()
-    hoje = date.today().isoformat()
-    prazo_limite = (date.today() + timedelta(days=dias_prazo)).isoformat()
+    hoje = date.today()
+    prazo_limite = (hoje + timedelta(days=dias_prazo)).isoformat()
+    hoje_str = hoje.isoformat()
 
     try:
         supabase = await get_supabase()
@@ -104,7 +106,7 @@ async def get_alertas(
         prazos_res = (
             await supabase.table("intimacoes")
             .select("id, processo_id, prazo_fatal, processos(numero_cnj)")
-            .gte("prazo_fatal", hoje)
+            .gte("prazo_fatal", hoje_str)
             .lte("prazo_fatal", prazo_limite)
             .execute()
         )
@@ -162,7 +164,7 @@ async def get_alertas(
     for intimacao in prazos:
         try:
             prazo = date.fromisoformat(str(intimacao["prazo_fatal"]))
-            dias_restantes = max((prazo - date.today()).days, 0)
+            dias_restantes = max((prazo - hoje).days, 0)
         except (ValueError, TypeError, KeyError):
             dias_restantes = 0
         processo_data = intimacao.get("processos") or {}
@@ -188,12 +190,11 @@ async def get_alertas(
             "id": op["id"],
             "titulo": op.get("titulo") or "Oportunidade",
             "descricao": f"Sem movimentação há {dias} dias",
-            "link": f"/crm/{op['lead_id']}",
+            "link": f"/crm/{op['lead_id']}" if op.get("lead_id") else f"/oportunidades/{op['id']}",
             "severidade": _severidade_oportunidade(dias),
             "dias": dias,
         })
 
-    _ORDER = {"alta": 0, "media": 1, "baixa": 2}
-    alertas.sort(key=lambda a: _ORDER[a["severidade"]])
+    alertas.sort(key=lambda a: _SEVERIDADE_ORDER[a["severidade"]])
 
     return {"alertas": alertas, "total": len(alertas)}
