@@ -1,4 +1,6 @@
 """Endpoints de inboxes (canais de atendimento)."""
+from typing import Literal
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -12,7 +14,7 @@ logger = get_logger("inboxes.router")
 
 class InboxCreate(BaseModel):
     nome: str
-    canal: str = "whatsapp"
+    canal: Literal["whatsapp", "webchat", "email"] = "whatsapp"
     evolution_instance: str | None = None
 
 
