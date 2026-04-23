@@ -1,4 +1,3 @@
-// frontend/app/(app)/analytics/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -15,6 +14,7 @@ import { TempoMedio } from "@/components/analytics/TempoMedio";
 import { DistribuicaoTribunal } from "@/components/analytics/DistribuicaoTribunal";
 import { OrigemLeads } from "@/components/analytics/OrigemLeads";
 import { CarteiraAtiva } from "@/components/analytics/CarteiraAtiva";
+import { AtendimentoSection } from "@/components/analytics/AtendimentoSection";
 
 function Skeleton({ className }: { className?: string }) {
   return (
@@ -132,10 +132,29 @@ export default function AnalyticsPage() {
             </div>
           ) : dados ? (
             <div className="grid grid-cols-3 gap-4">
-              <TaxaExito dados={dados.taxa_exito} />
-              <TempoMedio dados={dados.tempo_medio} />
+              <TaxaExito dados={dados.taxa_exito} geral={dados.taxa_exito_geral} />
+              <TempoMedio dados={dados.tempo_medio} geral={dados.tempo_medio_geral} />
               <DistribuicaoTribunal dados={dados.distribuicao_tribunal} />
             </div>
+          ) : null}
+        </div>
+
+        {/* Seção Atendimento */}
+        <div>
+          <div
+            className="text-[10px] uppercase tracking-widest font-semibold mb-4"
+            style={{ opacity: 0.4 }}
+          >
+            Atendimento / Chat
+          </div>
+          {loading ? (
+            <div className="grid grid-cols-3 gap-4">
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+            </div>
+          ) : dados ? (
+            <AtendimentoSection dados={dados.atendimento} />
           ) : null}
         </div>
       </div>
