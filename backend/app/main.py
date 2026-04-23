@@ -12,6 +12,8 @@ from app.api.dashboard.router import router as dashboard_router
 from app.api.processos.router import router as processos_router
 from app.api.public.leads import router as public_leads_router
 from app.api.webhooks.evolution import router as evolution_router
+from app.api.configuracoes.router import router as configuracoes_router
+from app.api.inboxes.router import router as inboxes_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.rpa.scheduler import start_scheduler, stop_scheduler
@@ -60,6 +62,8 @@ app.include_router(processos_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
 app.include_router(public_leads_router, prefix="/api")
 app.include_router(alertas_router, prefix="/api")
+app.include_router(configuracoes_router, prefix="/api")
+app.include_router(inboxes_router, prefix="/api")
 
 
 @app.get("/health", tags=["sistema"])
