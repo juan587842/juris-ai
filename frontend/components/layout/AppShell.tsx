@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart2, Bell, FileText, Inbox, KanbanSquare, LayoutDashboard, LogOut, Scale, Users } from "lucide-react";
+import { BarChart2, Bell, FileText, Inbox, KanbanSquare, LayoutDashboard, LogOut, Scale, Settings, Users } from "lucide-react";
 
 import { createBrowserClient } from "@/lib/supabase/client";
 import { api } from "@/lib/api";
@@ -22,6 +22,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/processos", label: "Processos", icon: FileText },
   { href: "/analytics", label: "Analytics", icon: BarChart2 },
   { href: "/alertas", label: "Alertas", icon: Bell },
+  { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 interface AppShellProps {
