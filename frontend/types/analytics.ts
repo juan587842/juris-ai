@@ -45,14 +45,23 @@ export interface CarteiraAtiva {
   total: number;
 }
 
+export interface AtendimentoData {
+  volume_conversas: number;
+  pct_transbordo: number | null;
+  tempo_medio_resposta_segundos: number | null;
+}
+
 export interface AnalyticsData {
   funil_conversao: FunilConversao;
   receita_por_area: ReceitaItem[];
   taxa_exito: TaxaExitoItem[];
+  taxa_exito_geral: number | null;
   tempo_medio: TempoMedioItem[];
+  tempo_medio_geral: number | null;
   distribuicao_tribunal: TribunalItem[];
   origem_leads: OrigemItem[];
   carteira_ativa: CarteiraAtiva;
+  atendimento: AtendimentoData;
 }
 
 export type Periodo = "30d" | "90d" | "365d";
