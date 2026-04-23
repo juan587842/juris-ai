@@ -300,6 +300,29 @@ async def get_analytics(
         )
         todos_processos = todos_proc_res.data or []
 
+        # Conversas criadas no período
+        conv_res = (
+            await supabase.table("conversations")
+            .select("id, ai_enabled, created_at")
+            .gte("created_at", cutoff)
+            .execute()
+        )
+        conversations = conv_res.data or []
+
+        # Mensagens das conversas do período (limit defensivo)
+        conv_ids = [c["id"] for c in conversations]
+        messages: list[dict] = []
+        if conv_ids:
+            msgs_res = (
+                await supabase.table("messages")
+                .select("conversation_id, sender_type, created_at")
+                .in_("conversation_id", conv_ids)
+                .order("created_at")
+                .limit(10000)
+                .execute()
+            )
+            messages = msgs_res.data or []
+
     except Exception as exc:
         logger.error("Erro ao buscar dados de analytics: %s", exc)
         raise HTTPException(status_code=503, detail="Serviço temporariamente indisponível") from exc
@@ -308,8 +331,11 @@ async def get_analytics(
         "funil_conversao": _calcular_funil(leads),
         "receita_por_area": _calcular_receita_por_area(ops),
         "taxa_exito": _calcular_taxa_exito(todos_processos),
+        "taxa_exito_geral": _calcular_taxa_exito_geral(todos_processos),
         "tempo_medio": _calcular_tempo_medio(todos_processos),
+        "tempo_medio_geral": _calcular_tempo_medio_geral(todos_processos),
         "distribuicao_tribunal": _calcular_distribuicao_tribunal(todos_processos),
         "origem_leads": _calcular_origem_leads(leads),
         "carteira_ativa": _calcular_carteira_ativa(todos_processos),
+        "atendimento": _calcular_atendimento(conversations, messages),
     }
