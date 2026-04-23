@@ -1,17 +1,17 @@
 import type { TempoMedioItem } from "@/types/analytics";
-import { AREA_LABELS } from "@/types/analytics";
 
 interface Props {
   dados: TempoMedioItem[];
+  geral: number | null;
 }
 
-function diasParaMeses(dias: number): string {
-  if (dias < 30) return `${dias}d`;
+function diasParaTexto(dias: number): string {
+  if (dias < 30) return `${dias} dias`;
   const meses = Math.round(dias / 30);
   return `${meses} ${meses === 1 ? "mês" : "meses"}`;
 }
 
-export function TempoMedio({ dados }: Props) {
+export function TempoMedio({ geral }: Props) {
   return (
     <div
       className="rounded-lg border p-4 flex flex-col gap-3"
@@ -21,19 +21,10 @@ export function TempoMedio({ dados }: Props) {
       }}
     >
       <div className="text-xs font-semibold">Tempo médio</div>
-      {dados.length === 0 ? (
+      {geral === null ? (
         <div className="text-[11px] text-muted-foreground">Sem processos finalizados</div>
       ) : (
-        <div className="flex flex-col gap-2">
-          {dados.map((item) => (
-            <div key={item.area} className="flex justify-between items-center text-[11px]">
-              <span className="text-muted-foreground">
-                {AREA_LABELS[item.area] ?? item.area}
-              </span>
-              <span className="font-semibold">{diasParaMeses(item.media_dias)}</span>
-            </div>
-          ))}
-        </div>
+        <div className="text-3xl font-bold">{diasParaTexto(geral)}</div>
       )}
       <div className="text-[10px] text-muted-foreground">Processos finalizados</div>
     </div>
