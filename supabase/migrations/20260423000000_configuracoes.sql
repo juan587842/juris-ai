@@ -9,8 +9,9 @@ create table if not exists public.escritorio (
   site        text,
   assinatura  text,
   rodape      text,
-  created_at  timestamptz default now(),
-  updated_at  timestamptz default now()
+  singleton   boolean not null default true unique,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
 );
 
 alter table public.escritorio enable row level security;
@@ -19,12 +20,21 @@ create policy "escritorio_select" on public.escritorio
   for select using (auth.role() = 'authenticated');
 
 create policy "escritorio_write" on public.escritorio
-  for all using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'admin'
-    )
-  );
+  for all using (get_my_role() = 'admin')
+  with check (get_my_role() = 'admin');
+
+-- auto-update updated_at
+create or replace function public.set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+create trigger trg_escritorio_updated_at
+  before update on public.escritorio
+  for each row execute function public.set_updated_at();
 
 -- preferências de notificação por usuário
 alter table public.profiles
