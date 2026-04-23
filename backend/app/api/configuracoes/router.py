@@ -81,7 +81,9 @@ async def update_perfil(user: AuthUser, body: PerfilUpdate) -> dict:
         logger.error("Erro ao atualizar perfil: %s", exc)
         raise HTTPException(status_code=503, detail="Serviço temporariamente indisponível") from exc
 
-    return res.data[0] if res.data else {}
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Perfil não encontrado")
+    return res.data[0]
 
 
 # ── Escritório ────────────────────────────────────────────────────────────────
@@ -99,13 +101,17 @@ class EscritorioUpdate(BaseModel):
 
 async def _require_admin(user_id: str) -> None:
     supabase = await get_supabase()
-    res = (
-        await supabase.table("profiles")
-        .select("role")
-        .eq("id", user_id)
-        .single()
-        .execute()
-    )
+    try:
+        res = (
+            await supabase.table("profiles")
+            .select("role")
+            .eq("id", user_id)
+            .single()
+            .execute()
+        )
+    except Exception as exc:
+        logger.error("Erro ao verificar permissão de admin: %s", exc)
+        raise HTTPException(status_code=503, detail="Serviço temporariamente indisponível") from exc
     if not res.data or res.data.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Apenas administradores podem editar dados do escritório")
 
