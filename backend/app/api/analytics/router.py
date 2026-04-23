@@ -155,6 +155,105 @@ def _calcular_carteira_ativa(processos: list[dict]) -> dict:
     }
 
 
+def _calcular_taxa_exito_geral(processos: list[dict]) -> float | None:
+    """% global de processos com resultado procedente ou acordo.
+
+    Retorna None se não houver processos com resultado registrado.
+    """
+    finalizados = [p for p in processos if p.get("resultado") is not None]
+    if not finalizados:
+        return None
+    exito = sum(1 for p in finalizados if p["resultado"] in ("procedente", "acordo"))
+    return round(exito / len(finalizados) * 100, 1)
+
+
+def _calcular_tempo_medio_geral(processos: list[dict]) -> float | None:
+    """Média global de dias entre created_at e updated_at dos processos finalizados.
+
+    Retorna None se não houver processos com resultado registrado.
+    """
+    dias_list: list[float] = []
+    for p in processos:
+        if p.get("resultado") is None:
+            continue
+        try:
+            created = datetime.fromisoformat(str(p["created_at"]).replace("Z", "+00:00"))
+            updated = datetime.fromisoformat(str(p["updated_at"]).replace("Z", "+00:00"))
+            dias_list.append(max((updated - created).days, 0))
+        except (KeyError, ValueError, TypeError):
+            continue
+    if not dias_list:
+        return None
+    return round(sum(dias_list) / len(dias_list))
+
+
+def _calcular_atendimento(conversations: list[dict], messages: list[dict]) -> dict:
+    """Métricas de atendimento: volume, transbordo e tempo médio de 1ª resposta.
+
+    Args:
+        conversations: registros da tabela conversations no período.
+        messages: todas as mensagens dessas conversas.
+
+    Returns:
+        dict com volume_conversas, pct_transbordo, tempo_medio_resposta_segundos.
+    """
+    total = len(conversations)
+    if total == 0:
+        return {
+            "volume_conversas": 0,
+            "pct_transbordo": None,
+            "tempo_medio_resposta_segundos": None,
+        }
+
+    transbordo = sum(1 for c in conversations if not c.get("ai_enabled", True))
+    pct_transbordo = round(transbordo / total * 100, 1)
+
+    # Agrupar mensagens por conversa
+    msgs_por_conv: dict[str, list[dict]] = {}
+    for msg in messages:
+        conv_id = msg.get("conversation_id", "")
+        msgs_por_conv.setdefault(conv_id, []).append(msg)
+
+    tempos: list[float] = []
+    for msgs in msgs_por_conv.values():
+        msgs_ord = sorted(msgs, key=lambda m: m.get("created_at", ""))
+        primeiro_lead = next(
+            (m for m in msgs_ord if m.get("sender_type") == "lead"), None
+        )
+        if not primeiro_lead:
+            continue
+        primeiro_bot = next(
+            (
+                m for m in msgs_ord
+                if m.get("sender_type") == "bot"
+                and m.get("created_at", "") > primeiro_lead.get("created_at", "")
+            ),
+            None,
+        )
+        if not primeiro_bot:
+            continue
+        try:
+            t_lead = datetime.fromisoformat(
+                str(primeiro_lead["created_at"]).replace("Z", "+00:00")
+            )
+            t_bot = datetime.fromisoformat(
+                str(primeiro_bot["created_at"]).replace("Z", "+00:00")
+            )
+            diff = (t_bot - t_lead).total_seconds()
+            if diff >= 0:
+                tempos.append(diff)
+        except (ValueError, TypeError):
+            continue
+
+    tempo_medio = round(sum(tempos) / len(tempos), 1) if tempos else None
+
+    return {
+        "volume_conversas": total,
+        "pct_transbordo": pct_transbordo,
+        "tempo_medio_resposta_segundos": tempo_medio,
+    }
+
+
 # ─── Endpoint ────────────────────────────────────────────────────────────────
 
 

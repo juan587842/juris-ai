@@ -10,6 +10,9 @@ from app.api.analytics.router import (
     _calcular_receita_por_area,
     _calcular_taxa_exito,
     _calcular_tempo_medio,
+    _calcular_taxa_exito_geral,
+    _calcular_tempo_medio_geral,
+    _calcular_atendimento,
 )
 
 
@@ -173,3 +176,95 @@ def test_calcular_tempo_medio_ignora_sem_resultado():
 def test_calcular_tempo_medio_vazio():
     resultado = _calcular_tempo_medio([])
     assert resultado == []
+
+
+# ─── Novos testes: funções globais ───────────────────────────────────────────
+
+
+def test_taxa_exito_geral_calcula_percentual():
+    processos = [
+        {"resultado": "procedente"},
+        {"resultado": "acordo"},
+        {"resultado": "improcedente"},
+        {"resultado": None},  # deve ser ignorado
+    ]
+    assert _calcular_taxa_exito_geral(processos) == pytest.approx(66.7, abs=0.1)
+
+
+def test_taxa_exito_geral_retorna_none_sem_finalizados():
+    assert _calcular_taxa_exito_geral([]) is None
+    assert _calcular_taxa_exito_geral([{"resultado": None}]) is None
+
+
+def test_tempo_medio_geral_calcula_media():
+    processos = [
+        {
+            "resultado": "procedente",
+            "created_at": "2024-01-01T00:00:00+00:00",
+            "updated_at": "2024-04-11T00:00:00+00:00",  # 101 dias
+        },
+        {
+            "resultado": "acordo",
+            "created_at": "2024-01-01T00:00:00+00:00",
+            "updated_at": "2024-02-10T00:00:00+00:00",  # 40 dias
+        },
+    ]
+    resultado = _calcular_tempo_medio_geral(processos)
+    assert resultado == pytest.approx(70, abs=2)  # média de 101 e 40
+
+
+def test_tempo_medio_geral_retorna_none_sem_finalizados():
+    assert _calcular_tempo_medio_geral([]) is None
+    assert _calcular_tempo_medio_geral([{"resultado": None}]) is None
+
+
+def test_calcular_atendimento_volume_e_transbordo():
+    conversations = [
+        {"id": "c1", "ai_enabled": True},
+        {"id": "c2", "ai_enabled": False},
+        {"id": "c3", "ai_enabled": False},
+    ]
+    messages = []
+    resultado = _calcular_atendimento(conversations, messages)
+    assert resultado["volume_conversas"] == 3
+    assert resultado["pct_transbordo"] == pytest.approx(66.7, abs=0.1)
+    assert resultado["tempo_medio_resposta_segundos"] is None
+
+
+def test_calcular_atendimento_tempo_resposta():
+    conversations = [{"id": "c1", "ai_enabled": True}]
+    messages = [
+        {
+            "conversation_id": "c1",
+            "sender_type": "lead",
+            "created_at": "2024-04-01T10:00:00+00:00",
+        },
+        {
+            "conversation_id": "c1",
+            "sender_type": "bot",
+            "created_at": "2024-04-01T10:00:30+00:00",  # 30 segundos depois
+        },
+    ]
+    resultado = _calcular_atendimento(conversations, messages)
+    assert resultado["tempo_medio_resposta_segundos"] == pytest.approx(30.0)
+
+
+def test_calcular_atendimento_ignora_conv_sem_resposta_bot():
+    conversations = [{"id": "c1", "ai_enabled": True}]
+    messages = [
+        {
+            "conversation_id": "c1",
+            "sender_type": "lead",
+            "created_at": "2024-04-01T10:00:00+00:00",
+        },
+        # sem mensagem bot — deve ser ignorada
+    ]
+    resultado = _calcular_atendimento(conversations, messages)
+    assert resultado["tempo_medio_resposta_segundos"] is None
+
+
+def test_calcular_atendimento_vazio():
+    resultado = _calcular_atendimento([], [])
+    assert resultado["volume_conversas"] == 0
+    assert resultado["pct_transbordo"] is None
+    assert resultado["tempo_medio_resposta_segundos"] is None
