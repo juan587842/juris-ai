@@ -61,4 +61,6 @@ async def update_inbox(_user: AuthUser, inbox_id: str, body: InboxUpdate) -> dic
     except Exception as exc:
         logger.error("Erro ao atualizar inbox %s: %s", inbox_id, exc)
         raise HTTPException(status_code=503, detail="Serviço temporariamente indisponível") from exc
-    return res.data[0] if res.data else {}
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Inbox não encontrado")
+    return res.data[0]
