@@ -63,6 +63,34 @@ class EvolutionClient:
         except Exception:
             return False
 
+    async def create_instance(self, instance: str) -> dict[str, Any]:
+        """Cria instância no Evolution e retorna qrcode base64."""
+        payload = {
+            "instanceName": instance,
+            "qrcode": True,
+            "integration": "WHATSAPP-BAILEYS",
+        }
+        return await self._post("/instance/create", payload)
+
+    async def get_connection_state(self, instance: str) -> str:
+        """Retorna 'open' | 'close' | 'connecting'."""
+        try:
+            data = await self._get(f"/instance/connectionState/{instance}")
+            return data.get("instance", {}).get("state", "close")
+        except Exception:
+            return "close"
+
+    async def get_qr_code(self, instance: str) -> str:
+        """Retorna base64 do QR code. Levanta ValueError se já conectado."""
+        data = await self._get(f"/instance/connect/{instance}")
+        if "base64" not in data:
+            raise ValueError("Instância já conectada ou QR indisponível")
+        return data["base64"]
+
+    async def delete_instance(self, instance: str) -> dict[str, Any]:
+        """Remove instância do servidor Evolution."""
+        return await self._delete(f"/instance/delete/{instance}")
+
     # ─── HTTP helpers ─────────────────────────────────────────────────────────
 
     async def _post(self, path: str, payload: dict) -> dict[str, Any]:
@@ -78,6 +106,15 @@ class EvolutionClient:
     async def _get(self, path: str) -> dict[str, Any]:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.get(
+                f"{self._base_url}{path}",
+                headers=self._headers,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+    async def _delete(self, path: str) -> dict[str, Any]:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.delete(
                 f"{self._base_url}{path}",
                 headers=self._headers,
             )
