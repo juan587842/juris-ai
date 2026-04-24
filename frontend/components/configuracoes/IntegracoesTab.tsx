@@ -68,6 +68,7 @@ function EvolutionPanel({
   onInboxUpdate: (patch: Partial<InboxData>) => void;
 }) {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   function stopPolling() {
     if (pollRef.current) {
@@ -109,7 +110,7 @@ function EvolutionPanel({
       if (res.state !== "open") startPolling();
     } catch (e: unknown) {
       onChange({ creating: false });
-      alert(e instanceof Error ? e.message : "Erro ao criar instância");
+      setErrorMsg(e instanceof Error ? e.message : "Erro ao criar instância");
     }
   }
 
@@ -148,7 +149,7 @@ function EvolutionPanel({
       stopPolling();
     } catch (e: unknown) {
       onChange({ deleting: false });
-      alert(e instanceof Error ? e.message : "Erro ao remover instância");
+      setErrorMsg(e instanceof Error ? e.message : "Erro ao remover instância");
     }
   }
 
@@ -225,6 +226,11 @@ function EvolutionPanel({
             style={{ width: 200, height: 200 }}
           />
         </div>
+      )}
+
+      {/* Erro inline */}
+      {errorMsg && (
+        <p className="text-xs text-red-400">{errorMsg}</p>
       )}
 
       {/* Remover instância */}
