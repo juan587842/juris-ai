@@ -48,6 +48,8 @@ export const CANAL_LABELS: Record<InboxData["canal"], string> = {
   email: "E-mail",
 };
 
+export type EvolutionState = "open" | "close" | "connecting" | "unknown";
+
 export const DEFAULT_NOTIF_PREFERENCES: NotifPreferences = {
   dias_processo: 7,
   dias_lead: 3,
