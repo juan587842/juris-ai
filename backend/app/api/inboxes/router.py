@@ -93,7 +93,9 @@ async def update_inbox(_user: AuthUser, inbox_id: str, body: InboxUpdate) -> dic
 async def evolution_create(
     _user: AuthUser, inbox_id: str, body: EvolutionCreateBody
 ) -> dict:
-    await _get_inbox(inbox_id)
+    inbox = await _get_inbox(inbox_id)
+    if inbox.get("evolution_instance"):
+        raise HTTPException(status_code=409, detail="Inbox já possui instância Evolution vinculada")
     evo = get_evolution_client()
     try:
         result = await evo.create_instance(body.instance_name)
