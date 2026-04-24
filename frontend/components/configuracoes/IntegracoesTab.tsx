@@ -70,6 +70,7 @@ function EvolutionPanel({
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [mode, setMode] = useState<"criar" | "vincular">("criar");
 
   function stopPolling() {
     if (pollRef.current) {
@@ -101,6 +102,7 @@ function EvolutionPanel({
   async function handleCreate() {
     if (!panel.instanceName.trim()) return;
     onChange({ creating: true });
+    setErrorMsg(null);
     try {
       const res = await api.post<{ state: EvolutionState; qrcode: string }>(
         `/api/inboxes/${inbox.id}/evolution/create`,
@@ -112,6 +114,23 @@ function EvolutionPanel({
     } catch (e: unknown) {
       onChange({ creating: false });
       setErrorMsg(e instanceof Error ? e.message : "Erro ao criar instância");
+    }
+  }
+
+  async function handleLink() {
+    if (!panel.instanceName.trim()) return;
+    onChange({ creating: true });
+    setErrorMsg(null);
+    try {
+      const res = await api.post<{ state: EvolutionState; qrcode: string | null }>(
+        `/api/inboxes/${inbox.id}/evolution/link`,
+        { instance_name: panel.instanceName.trim() }
+      );
+      onInboxUpdate({ evolution_instance: panel.instanceName.trim() });
+      onChange({ state: res.state, qrcode: res.qrcode || null, creating: false });
+    } catch (e: unknown) {
+      onChange({ creating: false });
+      setErrorMsg(e instanceof Error ? e.message : "Erro ao vincular instância");
     }
   }
 
@@ -165,6 +184,27 @@ function EvolutionPanel({
 
   return (
     <div className="mt-2 rounded-xl border border-border/40 bg-surface/40 p-4 space-y-4">
+      {/* Toggle modo (só quando sem instância) */}
+      {!hasInstance && (
+        <div className="flex gap-1 rounded-lg p-0.5" style={{ background: "rgba(255,255,255,.06)" }}>
+          {(["criar", "vincular"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              className="rounded-md px-3 py-1 text-xs font-semibold transition-colors"
+              style={
+                mode === m
+                  ? { background: "#c9a96e", color: "#0a0f1e" }
+                  : { color: "rgba(255,255,255,.5)" }
+              }
+            >
+              {m === "criar" ? "Criar nova" : "Vincular existente"}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Nome da instância */}
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium text-muted-foreground">
@@ -174,7 +214,7 @@ function EvolutionPanel({
           className={inputCls + " w-full"}
           value={panel.instanceName}
           onChange={(e) => onChange({ instanceName: e.target.value })}
-          placeholder="Ex: juris-escritorio"
+          placeholder={mode === "vincular" ? "Nome exato da instância no Evolution" : "Ex: juris-escritorio"}
           disabled={hasInstance}
         />
       </div>
@@ -183,7 +223,7 @@ function EvolutionPanel({
       <div className="flex items-center gap-3 flex-wrap">
         {hasInstance && <StateBadge state={panel.state} />}
 
-        {!hasInstance && (
+        {!hasInstance && mode === "criar" && (
           <button
             type="button"
             onClick={handleCreate}
@@ -192,6 +232,18 @@ function EvolutionPanel({
             style={{ background: "#c9a96e", color: "#0a0f1e" }}
           >
             {panel.creating ? "Criando…" : "Criar instância"}
+          </button>
+        )}
+
+        {!hasInstance && mode === "vincular" && (
+          <button
+            type="button"
+            onClick={handleLink}
+            disabled={panel.creating || !panel.instanceName.trim()}
+            className="rounded-lg px-3 py-1.5 text-sm font-semibold disabled:opacity-50"
+            style={{ background: "#c9a96e", color: "#0a0f1e" }}
+          >
+            {panel.creating ? "Vinculando…" : "Vincular"}
           </button>
         )}
 

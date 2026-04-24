@@ -89,6 +89,24 @@ async def update_inbox(_user: AuthUser, inbox_id: str, body: InboxUpdate) -> dic
 
 # ── Evolution API ─────────────────────────────────────────────────────────────
 
+@router.post("/{inbox_id}/evolution/link")
+async def evolution_link(
+    _user: AuthUser, inbox_id: str, body: EvolutionCreateBody
+) -> dict:
+    inbox = await _get_inbox(inbox_id)
+    if inbox.get("evolution_instance"):
+        raise HTTPException(status_code=409, detail="Inbox já possui instância Evolution vinculada")
+    supabase = await get_supabase()
+    await (
+        supabase.table("inboxes")
+        .update({"evolution_instance": body.instance_name})
+        .eq("id", inbox_id)
+        .execute()
+    )
+    evo = get_evolution_client()
+    state = await evo.get_connection_state(body.instance_name)
+    return {"state": state, "qrcode": None}
+
 @router.post("/{inbox_id}/evolution/create")
 async def evolution_create(
     _user: AuthUser, inbox_id: str, body: EvolutionCreateBody
