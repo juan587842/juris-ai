@@ -73,12 +73,12 @@ class EvolutionClient:
         return await self._post("/instance/create", payload)
 
     async def get_connection_state(self, instance: str) -> str:
-        """Retorna 'open' | 'close' | 'connecting'."""
+        """Retorna 'open' | 'close' | 'connecting' | 'unknown'."""
         try:
             data = await self._get(f"/instance/connectionState/{instance}")
             return data.get("instance", {}).get("state", "close")
         except Exception:
-            return "close"
+            return "unknown"
 
     async def get_qr_code(self, instance: str) -> str:
         """Retorna base64 do QR code. Levanta ValueError se já conectado."""

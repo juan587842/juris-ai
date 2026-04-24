@@ -69,6 +69,7 @@ function EvolutionPanel({
 }) {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   function stopPolling() {
     if (pollRef.current) {
@@ -140,7 +141,11 @@ function EvolutionPanel({
   }
 
   async function handleDelete() {
-    if (!confirm(`Remover instância "${inbox.evolution_instance}" do Evolution?`)) return;
+    if (!confirmingDelete) {
+      setConfirmingDelete(true);
+      return;
+    }
+    setConfirmingDelete(false);
     onChange({ deleting: true });
     try {
       await api.delete(`/api/inboxes/${inbox.id}/evolution/delete`);
@@ -235,15 +240,24 @@ function EvolutionPanel({
 
       {/* Remover instância */}
       {hasInstance && (
-        <div className="pt-2 border-t border-border/40">
+        <div className="pt-2 border-t border-border/40 flex items-center gap-3">
           <button
             type="button"
             onClick={handleDelete}
             disabled={panel.deleting}
             className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
           >
-            {panel.deleting ? "Removendo…" : "Remover instância"}
+            {panel.deleting ? "Removendo…" : confirmingDelete ? "Confirmar remoção" : "Remover instância"}
           </button>
+          {confirmingDelete && !panel.deleting && (
+            <button
+              type="button"
+              onClick={() => setConfirmingDelete(false)}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cancelar
+            </button>
+          )}
         </div>
       )}
     </div>
