@@ -153,8 +153,8 @@ async def evolution_delete(_user: AuthUser, inbox_id: str) -> dict:
     try:
         await evo.delete_instance(instance)
     except Exception as exc:
-        logger.error("Erro ao deletar instância Evolution %s: %s", instance, exc)
-        raise HTTPException(status_code=502, detail="Erro ao comunicar com Evolution API") from exc
+        # Instância pode não existir no Evolution — ainda assim limpa o banco
+        logger.warning("Erro ao deletar instância Evolution %s (continuando): %s", instance, exc)
 
     supabase = await get_supabase()
     await (
